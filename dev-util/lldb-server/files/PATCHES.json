@@ -1,0 +1,30 @@
+[
+  {
+    "metadata": {
+      "info": [],
+      "title": "Update NativeRegisterContextLinux_arm64.{cpp,h} to match changes to LinuxPTraceDefines_arm64sve.h file."
+    },
+    "platforms": [
+      "chromiumos"
+    ],
+    "rel_patch_path": "lldb-server-aarch64.patch",
+    "version_range": {
+      "from": 0,
+      "until": 431464
+    }
+  },
+  {
+    "metadata": {
+      "info": [],
+      "title": "[lldb] skip host build for lldb_tblgen with LLDB_TABLEGEN_EXE set"
+    },
+    "platforms": [
+      "chromiumos"
+    ],
+    "rel_patch_path": "1f7b25ea76a925aca690da28de9d78db7ca99d0c.patch",
+    "version_range": {
+      "from": 0,
+      "until": 435499
+    }
+  }
+]

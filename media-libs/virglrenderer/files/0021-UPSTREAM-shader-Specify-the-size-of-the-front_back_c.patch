@@ -1,0 +1,72 @@
+From caf3a19be3cc98a9f377266a69a9c93bbf5afa03 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Tue, 6 Jun 2023 12:22:03 +0200
+Subject: [PATCH 21/22] UPSTREAM: shader: Specify the size of the
+ front_back_color_emitted_flags array
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Allows to always have the size of the array in mind and get some more guarantees from
+the compiler.
+
+Change-Id: I4140af48b0dd185b1a82768549dde4897e64830d
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1143>
+(cherry picked from commit c234d6cb4ecbe201a521a78a042bc437f799c74f)
+---
+ src/vrend_shader.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/vrend_shader.c b/src/vrend_shader.c
+index 0bbf3087..ffc69399 100644
+--- a/src/vrend_shader.c
++++ b/src/vrend_shader.c
+@@ -6852,7 +6852,7 @@ emit_ios_generic_outputs(const struct dump_ctx *ctx,
+                          struct vrend_glsl_strbufs *glsl_strbufs,
+                          struct vrend_generic_ios *generic_ios,
+                          struct vrend_texcoord_ios *texcoord_ios,
+-                         uint8_t front_back_color_emitted_flags[],
++                         uint8_t front_back_color_emitted_flags[64],
+                          bool *force_color_two_side,
+                          const can_emit_generic_callback can_emit_generic)
+ {
+@@ -6938,7 +6938,7 @@ static void emit_ios_vs(const struct dump_ctx *ctx,
+                         struct vrend_glsl_strbufs *glsl_strbufs,
+                         struct vrend_generic_ios *generic_ios,
+                         struct vrend_texcoord_ios *texcoord_ios,
+-                        uint8_t front_back_color_emitted_flags[],
++                        uint8_t front_back_color_emitted_flags[64],
+                         bool *force_color_two_side)
+ {
+    uint32_t i;
+@@ -7266,7 +7266,7 @@ static void emit_ios_geom(const struct dump_ctx *ctx,
+                           struct vrend_glsl_strbufs *glsl_strbufs,
+                           struct vrend_generic_ios *generic_ios,
+                           struct vrend_texcoord_ios *texcoord_ios,
+-                          uint8_t front_back_color_emitted_flags[],
++                          uint8_t front_back_color_emitted_flags[64],
+                           uint64_t *interp_input_mask,
+                           bool *has_pervertex,
+                           bool *force_color_two_side)
+@@ -7401,7 +7401,7 @@ static void emit_ios_tes(const struct dump_ctx *ctx,
+                          struct vrend_glsl_strbufs *glsl_strbufs,
+                          struct vrend_generic_ios *generic_ios,
+                          struct vrend_texcoord_ios *texcoord_ios,
+-                         uint8_t front_back_color_emitted_flags[],
++                         uint8_t front_back_color_emitted_flags[64],
+                          bool *has_pervertex,
+                          bool *force_color_two_side)
+ {
+@@ -7510,7 +7510,7 @@ static int emit_ios(const struct dump_ctx *ctx,
+                     struct vrend_generic_ios *generic_ios,
+                     struct vrend_texcoord_ios *texcoord_ios,
+                     uint64_t *patches_emitted_mask,
+-                    uint8_t front_back_color_emitted_flags[],
++                    uint8_t front_back_color_emitted_flags[64],
+                     uint64_t *interp_input_mask,
+                     bool *has_pervertex,
+                     bool *force_color_two_side,
+-- 
+2.41.0.162.gfafddb0af9-goog
+

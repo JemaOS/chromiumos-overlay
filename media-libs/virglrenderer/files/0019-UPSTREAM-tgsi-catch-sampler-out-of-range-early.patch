@@ -1,0 +1,48 @@
+From e35e979e266d96afbcd75c94b6a21d06225892fa Mon Sep 17 00:00:00 2001
+From: Gert Wollny <gert.wollny@collabora.com>
+Date: Fri, 12 May 2023 08:59:06 +0200
+Subject: [PATCH 19/20] UPSTREAM: tgsi: catch sampler out of range early
+
+Since we only support PIPE_MAX_SAMPLERS we should already bail
+out in tgsi_scan instead of relying on convert_shader to catch
+this issue.
+
+This improves
+   a6716eee (tgsi: Add sanity checks to avoid out-of-bound access)
+
+Closes: https://gitlab.freedesktop.org/virgl/virglrenderer/-/issues/343
+
+Signed-off-by: Gert Wollny <gert.wollny@collabora.co.uk>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1114>
+(cherry picked from commit d839a56bd103b2f24066b245fa9cb13fc34e5336)
+Signed-off-by: Juston Li <justonli@google.com>
+---
+ src/gallium/auxiliary/tgsi/tgsi_scan.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/gallium/auxiliary/tgsi/tgsi_scan.c b/src/gallium/auxiliary/tgsi/tgsi_scan.c
+index 41065ecd..ac8ca322 100644
+--- a/src/gallium/auxiliary/tgsi/tgsi_scan.c
++++ b/src/gallium/auxiliary/tgsi/tgsi_scan.c
+@@ -225,13 +225,13 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+                      return false;
+                   }
+ 
++                  if ((unsigned)src->Register.Index >= PIPE_MAX_SAMPLERS) {
++                     debug_printf("TGSI Error: sampler ID %d out of range\n", src->Register.Index);
++                     return false;
++                  }
++
+                   if (fullinst->Texture.Texture == TGSI_TEXTURE_2D_MSAA ||
+                        fullinst->Texture.Texture == TGSI_TEXTURE_2D_ARRAY_MSAA) {
+-                     if ((unsigned)src->Register.Index >= ARRAY_SIZE(info->is_msaa_sampler)) {
+-                        debug_printf("TGSI Error: sampler ID %d out of range\n", src->Register.Index);
+-                        return false;
+-                     }
+-
+                      info->is_msaa_sampler[src->Register.Index] = TRUE;
+                   }
+                }
+-- 
+2.40.1.606.ga4b1b128d6-goog
+

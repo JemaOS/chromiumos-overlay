@@ -1,0 +1,34 @@
+From 06ae921557e5d3809d7e166e2ac28e009171672b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Wed, 3 May 2023 12:03:34 +0200
+Subject: [PATCH 14/17] UPSTREAM: renderer: Check the the format is valid
+ before assigning the image view
+
+Avoid out-of-bound access of the memory.
+
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1106>
+(cherry picked from commit e8049f43d46d22d76c4232377bd01c60da225580)
+Change-Id: I4bdc89b146c977388a4e3db256827f196474472d
+---
+ src/vrend_renderer.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index 5ee1b82a..4692c5f7 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -3697,6 +3697,11 @@ void vrend_set_single_image_view(struct vrend_context *ctx,
+       if (!has_feature(feat_images))
+          return;
+ 
++      if (unlikely(format >= ARRAY_SIZE(tex_conv_table))) {
++         vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_FORMAT, format);
++         return;
++      }
++
+       res = vrend_renderer_ctx_res_lookup(ctx, handle);
+       if (!res) {
+          vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_RESOURCE, handle);
+-- 
+2.39.2
+

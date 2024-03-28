@@ -1,0 +1,52 @@
+From 9dcb10ac36b899b009d069b461c23d5d5e3f5caf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Wed, 3 May 2023 19:14:15 +0200
+Subject: [PATCH 17/17] UPSTREAM: renderer: Make sure to unbind the sampler
+ state from the sub context
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The sampler state is stored at an `start_slot` offset which is not known
+afterwards, look at all the possible locations instead.
+
+Also handle the case when the sampler state is bound to several locations.
+
+Change-Id: I56efe09f25e2354014f2243ca8283c24125b096d
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1107>
+(cherry picked from commit 84b574b6fa278033577ad9e14020a30f2a92484f)
+---
+ src/vrend_renderer.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index 98da934c..a42c1126 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -2404,16 +2404,16 @@ static void vrend_destroy_sampler_state_object(void *obj_ptr)
+       for (enum pipe_shader_type shader_type = PIPE_SHADER_VERTEX;
+            shader_type < PIPE_SHADER_TYPES;
+            shader_type++) {
+-         uint32_t num_sampler_states = sub_ctx->num_sampler_states[shader_type];
+-         bool found = false;
+-         for (uint32_t sampler = 0; sampler < num_sampler_states; sampler++) {
++         int deleted_samplers = 0;
++         for (uint32_t sampler = 0; sampler < PIPE_MAX_SAMPLERS; sampler++) {
+             if (sub_ctx->sampler_state[shader_type][sampler] == state) {
+                sub_ctx->sampler_state[shader_type][sampler] = NULL;
+                sub_ctx->num_sampler_states[shader_type]--;
+                sub_ctx->sampler_views_dirty[shader_type] |= (1u << sampler);
+-               found = true;
+-            } else if (found) {
+-               sub_ctx->sampler_state[shader_type][sampler-1] = sub_ctx->sampler_state[shader_type][sampler];
++               deleted_samplers++;
++            } else if (deleted_samplers) {
++               sub_ctx->sampler_state[shader_type][sampler-deleted_samplers] = sub_ctx->sampler_state[shader_type][sampler];
++               sub_ctx->sampler_state[shader_type][sampler] = NULL;
+                sub_ctx->sampler_views_dirty[shader_type] |= (1u << sampler);
+             }
+          }
+-- 
+2.39.2
+

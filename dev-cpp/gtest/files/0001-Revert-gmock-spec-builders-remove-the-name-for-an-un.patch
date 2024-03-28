@@ -1,0 +1,47 @@
+From 3e6211abe6a26450f0d5b2ed95eee017d068cdde Mon Sep 17 00:00:00 2001
+From: Tom Hughes <tomhughes@chromium.org>
+Date: Mon, 3 Apr 2023 10:40:52 -0700
+Subject: [PATCH 1/2] Revert "gmock-spec-builders: remove the name for an
+ unused parameter."
+
+BUG=b:276524499
+
+This reverts commit e649993a402d96afe25fbf3413749adf0f2947f6.
+
+Change-Id: Ie619fdb01c7d9a328c3b9dad18eb27a7214194ad
+---
+ googlemock/include/gmock/gmock-spec-builders.h | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/googlemock/include/gmock/gmock-spec-builders.h b/googlemock/include/gmock/gmock-spec-builders.h
+index 4e498d8f..ef75453e 100644
+--- a/googlemock/include/gmock/gmock-spec-builders.h
++++ b/googlemock/include/gmock/gmock-spec-builders.h
+@@ -1727,6 +1727,10 @@ class FunctionMocker<R(Args...)> final : public UntypedFunctionMockerBase {
+     return std::forward<R>(result);
+   }
+ 
++  // Disable warnings about an unused parameter (due to SFINAE choosing an
++  // overload that doesn't use it).
++  GTEST_DISABLE_MSC_WARNINGS_PUSH_(4100);
++
+   // An overload for when it's not possible to print the result. In this case we
+   // simply perform the action.
+   template <typename T = R,
+@@ -1735,10 +1739,12 @@ class FunctionMocker<R(Args...)> final : public UntypedFunctionMockerBase {
+   R PerformActionAndPrintResult(const void* const untyped_action,
+                                 ArgumentTuple&& args,
+                                 const std::string& call_description,
+-                                std::ostream&) {
++                                std::ostream& os) {
+     return PerformAction(untyped_action, std::move(args), call_description);
+   }
+ 
++  GTEST_DISABLE_MSC_WARNINGS_POP_();
++
+   // Returns the result of invoking this mock function with the given
+   // arguments. This function can be safely called from multiple
+   // threads concurrently.
+-- 
+2.40.0.348.gf938b09366-goog
+

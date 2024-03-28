@@ -1,0 +1,2 @@
+include chromiumos/overlays/portage-stable:/OWNERS.general
+per-file .../*.policy = file:/OWNERS.security

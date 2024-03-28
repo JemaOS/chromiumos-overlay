@@ -1,0 +1,91 @@
+From d72c70e42da8af604dc9369f6ae622577083bf34 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Thu, 27 Apr 2023 15:08:46 +0200
+Subject: [PATCH 12/20] UPSTREAM: renderer: Take a reference of the resource
+ when assigning it to the image view
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Avoid using the resource when a dispose operation happened before the sub context
+has been freed.
+
+Change-Id: I488672708981ec6f3f9c6c61c89354b7094718ae
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1102>
+(cherry picked from commit c94ac5bd2a231db25e196dfee5dc8f1b4f57bdde)
+---
+ src/vrend_renderer.c | 43 +++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 41 insertions(+), 2 deletions(-)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index a8cd61c7..cf8b0a88 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -3702,7 +3702,7 @@ void vrend_set_single_image_view(struct vrend_context *ctx,
+          vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_RESOURCE, handle);
+          return;
+       }
+-      iview->texture = res;
++      vrend_resource_reference(&iview->texture, res);
+       iview->vformat = format;
+       iview->format = tex_conv_table[format].internalformat;
+       iview->access = access;
+@@ -3710,7 +3710,7 @@ void vrend_set_single_image_view(struct vrend_context *ctx,
+       iview->u.buf.size = level_size;
+       ctx->sub->images_used_mask[shader_type] |= (1u << index);
+    } else {
+-      iview->texture = NULL;
++      vrend_resource_reference(&iview->texture, NULL);
+       iview->format = 0;
+       ctx->sub->images_used_mask[shader_type] &= ~(1u << index);
+    }
+@@ -7419,6 +7419,45 @@ static void vrend_destroy_sub_context(struct vrend_sub_context *sub)
+       }
+    }
+ 
++   if (has_feature(feat_images)) {
++      for (int shader_type = PIPE_SHADER_VERTEX;
++           shader_type < PIPE_SHADER_TYPES;
++           shader_type++) {
++         uint32_t mask = sub->images_used_mask[shader_type];
++         while (mask) {
++            uint32_t i = u_bit_scan(&mask);
++            struct vrend_image_view *iview = &sub->image_views[shader_type][i];
++            vrend_resource_reference(&iview->texture, NULL);
++         }
++      }
++   }
++
++   if (has_feature(feat_atomic_counters)) {
++      uint32_t mask = sub->abo_used_mask;
++      while (mask) {
++         uint32_t i = u_bit_scan(&mask);
++         struct vrend_abo *abo = &sub->abo[i];
++         abo->buffer_offset = 0;
++         abo->buffer_size = 0;
++         vrend_resource_reference(&abo->res, NULL);
++      }
++   }
++
++   if (has_feature(feat_ssbo)) {
++      for (int shader_type = PIPE_SHADER_VERTEX;
++           shader_type < PIPE_SHADER_TYPES;
++           shader_type++) {
++         uint32_t mask = sub->ssbo_used_mask[shader_type];
++         while (mask) {
++            uint32_t i = u_bit_scan(&mask);
++            struct vrend_ssbo *ssbo = &sub->ssbo[shader_type][i];
++            ssbo->buffer_offset = 0;
++            ssbo->buffer_size = 0;
++            vrend_resource_reference(&ssbo->res, NULL);
++         }
++      }
++   }
++
+    if (sub->fb_id)
+       glDeleteFramebuffers(1, &sub->fb_id);
+ 
+-- 
+2.40.1.606.ga4b1b128d6-goog
+

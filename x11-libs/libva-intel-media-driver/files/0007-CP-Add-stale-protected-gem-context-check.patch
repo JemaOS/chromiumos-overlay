@@ -1,0 +1,145 @@
+From 031dbc36bf4ad5b09cfbb3574213496de06e53e9 Mon Sep 17 00:00:00 2001
+From: ankitjain88 <ankit1.jain@intel.com>
+Date: Sun, 5 Mar 2023 21:13:39 -0800
+Subject: [PATCH 1/2] [CP] Add stale protected gem context check (#109558)
+
+As per uapi, protected gem context should be recreated if corresponding protected session has been destroyed
+
+---
+ .../cp/os/mos_os_cp_interface_specific.h      |  6 +-
+ .../os/mos_gpucontext_specific_next.cpp       | 61 +++++++++++++------
+ .../common/os/mos_gpucontext_specific_next.h  |  6 ++
+ 3 files changed, 52 insertions(+), 21 deletions(-)
+
+diff --git a/media_common/linux/common/cp/os/mos_os_cp_interface_specific.h b/media_common/linux/common/cp/os/mos_os_cp_interface_specific.h
+index 5a341be697d..12c80d09407 100644
+--- a/media_common/linux/common/cp/os/mos_os_cp_interface_specific.h
++++ b/media_common/linux/common/cp/os/mos_os_cp_interface_specific.h
+@@ -91,6 +91,11 @@ public:
+         return false;
+     }
+ 
++    virtual void RegisterAndCheckProtectedGemCtx(bool bRegister, void *identifier, bool *bIsStale)
++    {
++        OsStubMessage();
++    }
++
+     virtual void SetCpEnabled(bool bIsCpEnabled)
+     {
+         OsStubMessage();
+@@ -244,5 +249,4 @@ MosCpInterface* Create_MosCpInterface(void* pvOsInterface);
+ //!           MosCpInterface
+ //!
+ void Delete_MosCpInterface(MosCpInterface* pMosCpInterface);
+-
+ #endif  // __MOS_OS_CP_SPECIFIC_H__
+diff --git a/media_softlet/linux/common/os/mos_gpucontext_specific_next.cpp b/media_softlet/linux/common/os/mos_gpucontext_specific_next.cpp
+index d3c4dd24f7a..57770f280d1 100755
+--- a/media_softlet/linux/common/os/mos_gpucontext_specific_next.cpp
++++ b/media_softlet/linux/common/os/mos_gpucontext_specific_next.cpp
+@@ -96,6 +96,25 @@ GpuContextSpecificNext::~GpuContextSpecificNext()
+     Clear();
+ }
+ 
++MOS_STATUS GpuContextSpecificNext::RecreateContext(bool bIsProtected, MOS_STREAM_HANDLE streamState)
++{
++    MOS_STATUS eStatus = MOS_STATUS_SUCCESS;
++    // clear existing context
++    Clear();
++    m_bProtectedContext = bIsProtected;
++    PMOS_GPUCTX_CREATOPTIONS createOption;
++    if (m_bEnhancedUsed)
++    {
++        createOption = &m_createOptionEnhanced;
++    }
++    else
++    {
++        createOption = &m_createOption;
++    }
++    eStatus = Init(m_osContext, streamState, createOption);
++    return eStatus;
++}
++
+ MOS_STATUS GpuContextSpecificNext::PatchGPUContextProtection(MOS_STREAM_HANDLE streamState)
+ {
+     MOS_STATUS eStatus = MOS_STATUS_SUCCESS;
+@@ -112,18 +131,31 @@ MOS_STATUS GpuContextSpecificNext::PatchGPUContextProtection(MOS_STREAM_HANDLE s
+                 if (m_bProtectedContext == false)    // Check if GEM context is already protected or not
+                 {
+                     // Context is not protected, recreate it as protected
+-                    Clear();
+-                    m_bProtectedContext = true;
+-                    PMOS_GPUCTX_CREATOPTIONS createOption;
+-                    if (m_bEnhancedUsed)
++                    eStatus = RecreateContext(true, streamState);
++                    if (eStatus == MOS_STATUS_SUCCESS)
+                     {
+-                        createOption = &m_createOptionEnhanced;
++                        //Register Protected Context
++                        streamState->osCpInterface->RegisterAndCheckProtectedGemCtx(true, (void*)this, nullptr);
+                     }
+-                    else
++                }
++                //If m_bProtectedContext == true then check if is stale context or not.
++                //If it is stale protected context then recreate another one
++                else
++                {
++                    bool bIsContextStale = false;
++                    //Check protected context
++                    streamState->osCpInterface->RegisterAndCheckProtectedGemCtx(false, (void*)this, &bIsContextStale);
++
++                    //Recreate protected context
++                    if (bIsContextStale)
+                     {
+-                        createOption = &m_createOption;
++                        eStatus = RecreateContext(true, streamState);
++                        if (eStatus == MOS_STATUS_SUCCESS)
++                        {
++                            //Register Protected Context
++                            streamState->osCpInterface->RegisterAndCheckProtectedGemCtx(true, (void*)this, nullptr);
++                        }
+                     }
+-                    eStatus = Init(m_osContext, streamState, createOption);
+                 }
+             }
+             else
+@@ -145,18 +177,7 @@ MOS_STATUS GpuContextSpecificNext::PatchGPUContextProtection(MOS_STREAM_HANDLE s
+         m_bProtectedContext == true)    // Check if GEM context is protected or not
+         {
+             // Context is protected, recreate it as clear
+-            Clear();
+-            m_bProtectedContext = false;
+-            PMOS_GPUCTX_CREATOPTIONS createOption;
+-            if (m_bEnhancedUsed)
+-            {
+-                createOption = &m_createOptionEnhanced;
+-            }
+-            else
+-            {
+-                createOption = &m_createOption;
+-            }
+-            eStatus = Init(m_osContext, streamState, createOption);
++            eStatus = RecreateContext(false, streamState);
+         }
+ 
+     return eStatus;
+diff --git a/media_softlet/linux/common/os/mos_gpucontext_specific_next.h b/media_softlet/linux/common/os/mos_gpucontext_specific_next.h
+index 5135ccfaa1e..ed0ff0c0210 100755
+--- a/media_softlet/linux/common/os/mos_gpucontext_specific_next.h
++++ b/media_softlet/linux/common/os/mos_gpucontext_specific_next.h
+@@ -336,6 +336,12 @@ private:
+     bool m_ocaLogSectionSupported = true;
+     // bool m_ocaSizeIncreaseDone = false;
+ 
++    //! \brief Recreate GEM Context
++    //! \return   MOS_STATUS
++    //!           Return MOS_STATUS_SUCCESS if successful, otherwise error code
++    //!
++    MOS_STATUS RecreateContext(bool bIsProtected, MOS_STREAM_HANDLE streamState);
++
+ #if (_DEBUG || _RELEASE_INTERNAL)
+     /*!\brief bits(23...16), (15...8), (7...0) are for Compute, VEbox and VDbox ;
+     single or multi engine instance can be selected at same time(0x10103 to select Compute1, VE1, VD1&VD2 for example)*/
+-- 
+2.25.1
+

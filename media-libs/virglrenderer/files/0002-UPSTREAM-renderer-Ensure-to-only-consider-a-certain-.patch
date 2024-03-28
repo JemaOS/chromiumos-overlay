@@ -1,0 +1,72 @@
+From a154f81a0d4ff6d7086ff9b7a0d38a180d43219d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Thu, 20 Apr 2023 17:16:13 +0200
+Subject: [PATCH 2/8] UPSTREAM: renderer: Ensure to only consider a certain
+ amount of varyings
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Make sure to never deal with more than PIPE_MAX_SHADER_OUTPUTS*2 varying.
+
+Change-Id: If5f694a041de282ae277fb88d5da131297c943f3
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1093>
+(cherry picked from commit a09a6e6e71ec86f12f872f12ca8e4467935849db)
+---
+ src/vrend_renderer.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index f5fbe78f..287d575f 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -33,6 +33,7 @@
+ 
+ #include "pipe/p_defines.h"
+ #include "pipe/p_state.h"
++#include "util/macros.h"
+ #include "util/u_inlines.h"
+ #include "util/u_memory.h"
+ #include "util/u_dual_blend.h"
+@@ -1484,19 +1485,19 @@ static void set_stream_out_varyings(ASSERTED struct vrend_sub_context *sub_ctx,
+       if (last_buffer != so->output[i].output_buffer) {
+ 
+          skip = so->stride[last_buffer] - buf_offset;
+-         while (skip) {
++         while (skip && n_outputs < ARRAY_SIZE(varyings)) {
+             start_skip = get_skip_str(&skip);
+             if (start_skip)
+                varyings[n_outputs++] = start_skip;
+          }
+-         for (j = last_buffer; j < so->output[i].output_buffer; j++)
++         for (j = last_buffer; j < so->output[i].output_buffer && n_outputs < ARRAY_SIZE(varyings); j++)
+             varyings[n_outputs++] = strdup("gl_NextBuffer");
+          last_buffer = so->output[i].output_buffer;
+          buf_offset = 0;
+       }
+ 
+       skip = so->output[i].dst_offset - buf_offset;
+-      while (skip) {
++      while (skip && n_outputs < ARRAY_SIZE(varyings)) {
+          start_skip = get_skip_str(&skip);
+          if (start_skip)
+             varyings[n_outputs++] = start_skip;
+@@ -1504,12 +1505,12 @@ static void set_stream_out_varyings(ASSERTED struct vrend_sub_context *sub_ctx,
+       buf_offset = so->output[i].dst_offset;
+ 
+       buf_offset += so->output[i].num_components;
+-      if (sinfo->so_names[i])
++      if (sinfo->so_names[i] && n_outputs < ARRAY_SIZE(varyings))
+          varyings[n_outputs++] = strdup(sinfo->so_names[i]);
+    }
+ 
+    skip = so->stride[last_buffer] - buf_offset;
+-   while (skip) {
++   while (skip && n_outputs < ARRAY_SIZE(varyings)) {
+       start_skip = get_skip_str(&skip);
+       if (start_skip)
+          varyings[n_outputs++] = start_skip;
+-- 
+2.40.1.495.gc816e09b53d-goog
+

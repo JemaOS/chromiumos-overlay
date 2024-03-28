@@ -1,0 +1,92 @@
+From 457bded30ff4a6f2c342c431b78d49e393b4a058 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Tue, 25 Apr 2023 14:04:54 +0200
+Subject: [PATCH 7/8] UPSTREAM: renderer: Make abo and ssbo take a strong
+ reference of the resource
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Avoid using the resource when a dispose operation happened before the sub context
+has been freed.
+
+Change-Id: I06d1b1737bbf9e099b2cc8dffb4c8fffb17c58f6
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1095>
+(cherry picked from commit bbc0bf092a7f705dd8357adecee0207545ff1754)
+---
+ src/vrend_renderer.c | 36 ++++++++++++++++++++++++++++++++----
+ 1 file changed, 32 insertions(+), 4 deletions(-)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index f3f5fe98..e6888c01 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -3734,12 +3734,13 @@ void vrend_set_single_ssbo(struct vrend_context *ctx,
+          vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_RESOURCE, handle);
+          return;
+       }
+-      ssbo->res = res;
++
++      vrend_resource_reference(&ssbo->res, res);
+       ssbo->buffer_offset = offset;
+       ssbo->buffer_size = length;
+       ctx->sub->ssbo_used_mask[shader_type] |= (1u << index);
+    } else {
+-      ssbo->res = 0;
++      vrend_resource_reference(&ssbo->res, NULL);
+       ssbo->buffer_offset = 0;
+       ssbo->buffer_size = 0;
+       ctx->sub->ssbo_used_mask[shader_type] &= ~(1u << index);
+@@ -3763,12 +3764,13 @@ void vrend_set_single_abo(struct vrend_context *ctx,
+          vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_RESOURCE, handle);
+          return;
+       }
+-      abo->res = res;
++
++      vrend_resource_reference(&abo->res, res);
+       abo->buffer_offset = offset;
+       abo->buffer_size = length;
+       ctx->sub->abo_used_mask |= (1u << index);
+    } else {
+-      abo->res = 0;
++      vrend_resource_reference(&abo->res, NULL);
+       abo->buffer_offset = 0;
+       abo->buffer_size = 0;
+       ctx->sub->abo_used_mask &= ~(1u << index);
+@@ -7391,6 +7393,32 @@ static void vrend_destroy_sub_context(struct vrend_sub_context *sub)
+ 
+    vrend_clicbs->make_current(sub->gl_context);
+ 
++   if (has_feature(feat_atomic_counters)) {
++      uint32_t mask = sub->abo_used_mask;
++      while (mask) {
++         uint32_t i = u_bit_scan(&mask);
++         struct vrend_abo *abo = &sub->abo[i];
++         abo->buffer_offset = 0;
++         abo->buffer_size = 0;
++         vrend_resource_reference(&abo->res, NULL);
++      }
++   }
++
++   if (has_feature(feat_ssbo)) {
++      for (int shader_type = PIPE_SHADER_VERTEX;
++           shader_type <= PIPE_SHADER_TYPES;
++           shader_type++) {
++         uint32_t mask = sub->ssbo_used_mask[shader_type];
++         while (mask) {
++            uint32_t i = u_bit_scan(&mask);
++            struct vrend_ssbo *ssbo = &sub->ssbo[shader_type][i];
++            ssbo->buffer_offset = 0;
++            ssbo->buffer_size = 0;
++            vrend_resource_reference(&ssbo->res, NULL);
++         }
++      }
++   }
++
+    if (sub->fb_id)
+       glDeleteFramebuffers(1, &sub->fb_id);
+ 
+-- 
+2.40.1.495.gc816e09b53d-goog
+

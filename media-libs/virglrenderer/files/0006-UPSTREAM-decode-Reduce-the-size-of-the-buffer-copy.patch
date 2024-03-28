@@ -1,0 +1,33 @@
+From 2eabf891411426b6c84333ec5f13dacd6071c9bf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Mon, 7 Aug 2023 15:00:48 +0200
+Subject: [PATCH] decode: Reduce the size of the buffer copy
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Ensure that only the string subpart of the buffer is being copied, which
+implied that it is smaller than the original buffer.
+
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1193>
+---
+ src/vrend_decode.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vrend_decode.c b/src/vrend_decode.c
+index a026432e..7e126c14 100644
+--- a/src/vrend_decode.c
++++ b/src/vrend_decode.c
+@@ -1352,7 +1352,7 @@ static int vrend_decode_texture_barrier(struct vrend_context *ctx, const uint32_
+ static int vrend_decode_set_debug_mask(struct vrend_context *ctx, const uint32_t *buf, uint32_t length)
+ {
+    char *flagstring;
+-   size_t slen = sizeof(uint32_t) * length;
++   size_t slen = sizeof(uint32_t) * (length - VIRGL_SET_DEBUG_FLAGSTRING_OFFSET);
+ 
+    if (length < VIRGL_SET_DEBUG_FLAGS_MIN_SIZE)
+       return EINVAL;
+-- 
+2.42.0.rc1.204.g551eb34607-goog
+

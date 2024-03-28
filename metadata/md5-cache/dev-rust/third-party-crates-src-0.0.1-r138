@@ -1,0 +1,16 @@
+BDEPEND=dev-vcs/git
+DEFINED_PHASES=compile configure info install postinst preinst prepare prerm setup test unpack
+DEPEND=>=virtual/rust-1.60.0:= virtual/rust-binaries:=
+DESCRIPTION=Sources of third-party crates used by ChromeOS
+EAPI=7
+HOMEPAGE=https://chromium.googlesource.com/chromiumos/third_party/rust_crates/+/HEAD/
+IUSE=cros_host cros_workon_tree_8a58e62d6525f5a1a1267a36cd109cc0774af12a_361952f776d7e4d2063cbd9ab23cafc5e98ea97b cros-debug asan coverage fuzzer msan tsan ubsan asan rust-coverage cros_host fuzzer lsan +lto msan +panic-abort sccache test tsan ubsan python_single_target_python3_9 python_single_target_python3_8 python_single_target_python3_7 python_single_target_python3_6
+KEYWORDS=*
+LICENSE=0BSD Apache-2.0 BSD BSD-2 ISC MIT MPL-2.0 ZLIB unicode
+PROPERTIES=live
+RDEPEND=virtual/rust-binaries:=
+REQUIRED_USE=?? ( asan lsan msan tsan )
+RESTRICT=test
+SLOT=0/0.0.1-r138
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-debug	d0e1d9e5135150f29e4a5131ceedfb74	cros-rust	f03601f4b6ab1978cda4b3f8995db514	cros-sanitizers	02391973ba1e60a0fca5b96f94f4beff	cros-workon	c286b70ed045cd0c9488c299b7c0859d	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	multilib	2477ebe553d3e4d2c606191fe6c33602	multiprocessing	c3cf317581e5bd068a4b851f03dd8cba	python-single-r1	674c48c926cbb44e91b656e0399d8f54	python-utils-r1	5bd4686cbe063e46fff90664cfc1a5a1	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e
+_md5_=35a0d3ebd84aedfa6088235dd855be10

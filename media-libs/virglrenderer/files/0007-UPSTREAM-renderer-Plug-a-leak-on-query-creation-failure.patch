@@ -1,0 +1,32 @@
+From dc5502d3de903f962359e4d71be897a22cef739a Mon Sep 17 00:00:00 2001
+From: Dawn Han <dawnhan@google.com>
+Date: Fri, 11 Aug 2023 09:01:54 +0200
+Subject: [PATCH] renderer: Plug a leak on query creation failure
+
+The allocated ressource needs to be freed
+
+Closes: https://gitlab.freedesktop.org/virgl/virglrenderer/-/issues/387
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1200>
+---
+ src/vrend_renderer.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index 03eeefb1..a59dd55f 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -11243,8 +11243,10 @@ int vrend_create_query(struct vrend_context *ctx, uint32_t handle,
+       }
+    }
+ 
+-   if (err)
++   if (err) {
++      vrend_resource_reference(&q->res, NULL);
+       FREE(q);
++   }
+ 
+    return err;
+ }
+-- 
+2.42.0.rc1.204.g551eb34607-goog
+

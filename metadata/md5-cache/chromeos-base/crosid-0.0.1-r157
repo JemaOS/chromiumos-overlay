@@ -1,0 +1,11 @@
+BDEPEND=dev-vcs/git >=dev-util/meson-0.58.2-r1 >=dev-util/ninja-1.8.2 dev-util/meson-format-array
+DEFINED_PHASES=compile configure info install setup test unpack
+EAPI=7
+HOMEPAGE=https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/chromeos-config
+IUSE=cros_host cros_workon_tree_5fc655a864e89f331445ad76c757c117f451092b asan coverage fuzzer msan tsan ubsan
+KEYWORDS=*
+LICENSE=BSD-Google
+PROPERTIES=live
+SLOT=0/0.0.1-r157
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-sanitizers	02391973ba1e60a0fca5b96f94f4beff	cros-workon	c286b70ed045cd0c9488c299b7c0859d	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	meson	1cac59cd2074f59abbe00de88e93af9f	multilib	2477ebe553d3e4d2c606191fe6c33602	multiprocessing	c3cf317581e5bd068a4b851f03dd8cba	ninja-utils	132cbb376048d079b5a012f5467c4e7f	python-utils-r1	5bd4686cbe063e46fff90664cfc1a5a1	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e
+_md5_=04895271af8dca88accd50b7ab1cf43c

@@ -1,0 +1,58 @@
+From 4735b3ac67ff3481281a9afd944a10cbfecd5635 Mon Sep 17 00:00:00 2001
+From: Manoj Gupta <manojgupta@google.com>
+Date: Tue, 4 Apr 2023 11:02:58 -0700
+Subject: [PATCH 1/2] Revert "[clang compat] Adopt OptionalFileEntryRef"
+
+This reverts commit e28a2853e7877e350670046a0ad9e4dd0b322f1f.
+---
+ iwyu.cc              | 5 +++--
+ iwyu_preprocessor.cc | 2 +-
+ iwyu_preprocessor.h  | 2 +-
+ 3 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/iwyu.cc b/iwyu.cc
+index 8627b54..1b5a044 100644
+--- a/iwyu.cc
++++ b/iwyu.cc
+@@ -2475,9 +2475,10 @@ class IwyuBaseAstVisitor : public BaseAstVisitor<Derived> {
+         // parse it to '<new>' before using, so any path that does
+         // that, and is clearly a c++ path, is fine; its exact
+         // contents don't matter that much.
+-        using clang::OptionalFileEntryRef;
++        using clang::Optional;
++        using clang::FileEntryRef;
+         const FileEntry* use_file = CurrentFileEntry();
+-        OptionalFileEntryRef file = compiler()->getPreprocessor().LookupFile(
++        Optional<FileEntryRef> file = compiler()->getPreprocessor().LookupFile(
+             CurrentLoc(), "new", true, nullptr, use_file, nullptr, nullptr,
+             nullptr, nullptr, nullptr, nullptr, false);
+         if (file) {
+diff --git a/iwyu_preprocessor.cc b/iwyu_preprocessor.cc
+index a17d4ec..7c8d0d7 100644
+--- a/iwyu_preprocessor.cc
++++ b/iwyu_preprocessor.cc
+@@ -704,7 +704,7 @@ void IwyuPreprocessorInfo::InclusionDirective(
+     StringRef filename,
+     bool is_angled,
+     clang::CharSourceRange filename_range,
+-    clang::OptionalFileEntryRef file,
++    Optional<FileEntryRef> file,
+     StringRef search_path,
+     StringRef relative_path,
+     const clang::Module* imported,
+diff --git a/iwyu_preprocessor.h b/iwyu_preprocessor.h
+index 18e879a..f720e9d 100644
+--- a/iwyu_preprocessor.h
++++ b/iwyu_preprocessor.h
+@@ -205,7 +205,7 @@ class IwyuPreprocessorInfo : public clang::PPCallbacks,
+                           llvm::StringRef filename,
+                           bool is_angled,
+                           clang::CharSourceRange filename_range,
+-                          clang::OptionalFileEntryRef file,
++                          llvm::Optional<clang::FileEntryRef> file,
+                           llvm::StringRef search_path,
+                           llvm::StringRef relative_path,
+                           const clang::Module* imported,
+-- 
+2.39.2
+

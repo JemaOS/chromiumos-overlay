@@ -1,0 +1,14 @@
+BDEPEND=dev-lang/go dev-vcs/git
+DEFINED_PHASES=compile info install postinst prepare setup test unpack
+DEPEND=!dev-util/fw-provision dev-util/lro-server dev-util/lroold-server dev-go/genproto dev-go/luci-go-common dev-go/mock dev-go/protobuf dev-go/protobuf-legacy-api chromeos-base/cros-config-api
+DESCRIPTION=Firmware provisioning implementation for CFT
+EAPI=7
+HOMEPAGE=https://chromium.googlesource.com/chromiumos/platform/dev-util/+/HEAD/src/chromiumos/test/provision/v2/cros-fw-provision
+IUSE=cros_host cros_workon_tree_91dca752e4b9c234723417ffb81ca0298999f005
+KEYWORDS=*
+LICENSE=BSD-Google
+PROPERTIES=live
+RDEPEND=!dev-util/fw-provision dev-util/lro-server dev-util/lroold-server dev-go/genproto dev-go/luci-go-common dev-go/mock dev-go/protobuf dev-go/protobuf-legacy-api chromeos-base/cros-config-api
+SLOT=0/0.0.1-r61
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-go	f9fed668704cb8398d685f363cd666c2	cros-workon	c286b70ed045cd0c9488c299b7c0859d	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	multilib	2477ebe553d3e4d2c606191fe6c33602	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e
+_md5_=ed650dddc86f96d646883e81e27c19df

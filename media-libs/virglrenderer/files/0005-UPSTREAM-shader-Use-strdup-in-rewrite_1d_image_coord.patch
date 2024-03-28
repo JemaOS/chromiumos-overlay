@@ -1,0 +1,35 @@
+From be80b447f9e9fdb6beeac535113c7f3e2e8155f4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Tue, 25 Apr 2023 15:18:14 +0200
+Subject: [PATCH 5/8] UPSTREAM: shader: Use strdup in
+ rewrite_1d_image_coordinate
+
+Avoid the use of the length as we were missing the addition of the NULL
+character meaning that we could make strbuf_fmt overflow.
+
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1097>
+(cherry picked from commit 8074c7f58de3039eea4732c0d56b4c06d5314169)
+Change-Id: I7cdd378961214cee4c84ffabbbe28115f65abaf9
+---
+ src/vrend_shader.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/vrend_shader.c b/src/vrend_shader.c
+index 0939569a..7c7a90ba 100644
+--- a/src/vrend_shader.c
++++ b/src/vrend_shader.c
+@@ -5070,10 +5070,9 @@ static bool rewrite_1d_image_coordinate(struct vrend_strbuf *src, const struct t
+ 
+       /* duplicate src */
+       size_t len = strbuf_get_len(src);
+-      char *buf = malloc(len);
++      char *buf = strdup(src->buf);
+       if (!buf)
+          return false;
+-      strncpy(buf, src->buf, len);
+ 
+       if (inst->Memory.Texture == TGSI_TEXTURE_1D)
+          strbuf_fmt(src, "vec2(vec4(%s).x, 0)", buf);
+-- 
+2.40.1.495.gc816e09b53d-goog
+

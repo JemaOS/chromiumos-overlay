@@ -1,0 +1,14 @@
+BDEPEND=dev-vcs/git virtual/pkgconfig
+DEFINED_PHASES=compile configure info install postinst preinst prepare setup unpack
+DEPEND=chromeos-base/minijail dbus? ( sys-apps/dbus ) kernel_linux? ( dev-libs/libnl:3 net-wireless/crda ) !kernel_linux? ( net-libs/libpcap ) qt5? ( dev-qt/qtcore:5 dev-qt/qtgui:5 dev-qt/qtsvg:5 dev-qt/qtwidgets:5 ) readline? ( sys-libs/ncurses:0 sys-libs/readline:0 ) !libressl? ( dev-libs/openssl:0=[bindist=] ) libressl? ( dev-libs/libressl:0= ) smartcard? ( dev-libs/libp11 ) virtual/pkgconfig sys-apps/baselayout
+DESCRIPTION=IEEE 802.1X/WPA supplicant for secure wireless transfers
+EAPI=7
+HOMEPAGE=https://w1.fi/wpa_supplicant/
+IUSE=+ap bindist dbus debug eap-sim fuzzer +hs2-0 libressl +mbo mesh p2p ps3 qt5 readline +seccomp selinux smartcard supplicant-next systemd tdls uncommon-eap-types +wep wifi_hostap_test +wnm wps kernel_linux kernel_FreeBSD wimax asan coverage fuzzer msan tsan ubsan cros_host cros_workon_tree_68c842f961ee688abbcee91486aed6dc30e59819_68c842f961ee688abbcee91486aed6dc30e59819 fuzzer
+KEYWORDS=*
+LICENSE=|| ( GPL-2 BSD )
+PROPERTIES=live
+RDEPEND=chromeos-base/minijail dbus? ( sys-apps/dbus ) kernel_linux? ( dev-libs/libnl:3 net-wireless/crda ) !kernel_linux? ( net-libs/libpcap ) qt5? ( dev-qt/qtcore:5 dev-qt/qtgui:5 dev-qt/qtsvg:5 dev-qt/qtwidgets:5 ) readline? ( sys-libs/ncurses:0 sys-libs/readline:0 ) !libressl? ( dev-libs/openssl:0=[bindist=] ) libressl? ( dev-libs/libressl:0= ) smartcard? ( dev-libs/libp11 ) !net-wireless/wpa_supplicant !net-wireless/wpa_supplicant-2_8 !net-wireless/wpa_supplicant-2_9 selinux? ( sec-policy/selinux-networkmanager ) virtual/tmpfiles sys-apps/baselayout
+SLOT=0
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-fuzzer	096b05318c521490cb43334560da8fb9	cros-sanitizers	02391973ba1e60a0fca5b96f94f4beff	cros-workon	c286b70ed045cd0c9488c299b7c0859d	estack	686eaab303305a908fd57b2fd7617800	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	multilib	2477ebe553d3e4d2c606191fe6c33602	qmake-utils	bdf97e69a34b864d6d545f4ec3143ff7	systemd	5f4bb0758df2e483babf68cd517078ca	tmpfiles	216aa76c3a6fcb5d893c23a0de86048f	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e	user	4e2ffee100481639425c80355dd60c7b
+_md5_=f9e7644ca4541309b46d9ab7c6489079

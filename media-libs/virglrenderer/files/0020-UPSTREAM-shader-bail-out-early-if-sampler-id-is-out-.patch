@@ -1,0 +1,63 @@
+From 7f58463c62289b023c234104cad7cd2ac503fde4 Mon Sep 17 00:00:00 2001
+From: Gert Wollny <gert.wollny@collabora.com>
+Date: Mon, 15 May 2023 06:49:54 +0200
+Subject: [PATCH 20/20] UPSTREAM: shader: bail out early if sampler id is out
+ of range
+
+Just make sure we don't end up with a wrong sampler index here.
+
+Related: https://gitlab.freedesktop.org/virgl/virglrenderer/-/issues/343
+
+Signed-off-by: Gert Wollny <gert.wollny@collabora.co.uk>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1114>
+(cherry picked from commit a95035670b0503eb6dce1230025dc3f564309289)
+Signed-off-by: Juston Li <justonli@google.com>
+---
+ src/vrend_shader.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/src/vrend_shader.c b/src/vrend_shader.c
+index f1a26bc4..0bbf3087 100644
+--- a/src/vrend_shader.c
++++ b/src/vrend_shader.c
+@@ -2687,14 +2687,13 @@ static void handle_fragment_proc_exit(const struct dump_ctx *ctx,
+ }
+ 
+ // TODO Consider exposing non-const ctx-> members as args to make *ctx const
+-static void set_texture_reqs(struct dump_ctx *ctx,
++static bool set_texture_reqs(struct dump_ctx *ctx,
+                              const struct tgsi_full_instruction *inst,
+                              uint32_t sreg_index)
+ {
+    if (sreg_index >= ARRAY_SIZE(ctx->samplers)) {
+       vrend_printf( "Sampler view exceeded, max is %lu\n", ARRAY_SIZE(ctx->samplers));
+-      set_buf_error(&ctx->glsl_strbufs);
+-      return;
++      return false;
+    }
+    ctx->samplers[sreg_index].tgsi_sampler_type = inst->Texture.Texture;
+ 
+@@ -2704,6 +2703,7 @@ static void set_texture_reqs(struct dump_ctx *ctx,
+       if (ctx->shader_req_bits & (SHADER_REQ_SAMPLER_RECT |
+                                   SHADER_REQ_SAMPLER_BUF))
+          ctx->glsl_ver_required = require_glsl_ver(ctx, 140);
++   return true;
+ }
+ 
+ // TODO Consider exposing non-const ctx-> members as args to make *ctx const
+@@ -3102,7 +3102,11 @@ static void translate_tex(struct dump_ctx *ctx,
+    strbuf_alloc(&bias_buf, 128);
+    strbuf_alloc(&offset_buf, 128);
+ 
+-   set_texture_reqs(ctx, inst, sinfo->sreg_index);
++   if (!set_texture_reqs(ctx, inst, sinfo->sreg_index)) {
++      set_buf_error(&ctx->glsl_strbufs);
++      goto cleanup;
++   }
++
+    is_shad = samplertype_is_shadow(inst->Texture.Texture);
+ 
+    switch (ctx->samplers[sinfo->sreg_index].tgsi_sampler_return) {
+-- 
+2.40.1.606.ga4b1b128d6-goog
+

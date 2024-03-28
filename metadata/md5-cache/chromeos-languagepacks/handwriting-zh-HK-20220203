@@ -1,0 +1,11 @@
+DEFINED_PHASES=install unpack
+DESCRIPTION=Handwriting zh-HK Language Pack for Chromium OS
+EAPI=7
+IUSE=dlc ondevice_handwriting
+KEYWORDS=*
+LICENSE=BSD-Google
+REQUIRED_USE=dlc ondevice_handwriting
+SLOT=0
+SRC_URI=gs://chromeos-localmirror/distfiles/languagepack-handwriting-zh-HK-20220203.tar.xz
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	dlc	cde6454bdd149957ae0d8ba668d3858f
+_md5_=c746a84876abe6460450c48716c093b0

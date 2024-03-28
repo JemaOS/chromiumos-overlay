@@ -1,0 +1,16 @@
+BDEPEND=dev-vcs/git
+DEFINED_PHASES=compile configure info install setup unpack
+DEPEND=chromeos-base/chromeos-config:=
+DESCRIPTION=coreboot's libpayload library
+EAPI=7
+HOMEPAGE=http://www.coreboot.org
+IUSE=coreboot-sdk unibuild verbose ti50_onboard cros_host cros_workon_tree_66a88c06688313e858fa73ce3157f9524b43f7f0_76c731d9a0430557af4d0a5152e2035304733d2d_374a3c6004bfeb78d7edf3eac91a4a1f17e18c4a_9b5b2971dff97e2c7be2651f9ed78fb42682e7bc_846e05a6f441152253ce9355531fe3dc7f927c5e_f3609a221be25945f2116ac6f8ddbd3e666162b9 asan coverage fuzzer msan tsan ubsan
+KEYWORDS=*
+LICENSE=GPL-2
+PROPERTIES=live
+RDEPEND=chromeos-base/chromeos-config:=
+REQUIRED_USE=unibuild coreboot-sdk
+RESTRICT=binchecks strip
+SLOT=0/0.0.1-r4372
+_eclasses_=coreboot-sdk	846880d65f92a6a00ceed0aa24aeecac	cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-sanitizers	02391973ba1e60a0fca5b96f94f4beff	cros-workon	c286b70ed045cd0c9488c299b7c0859d	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	multilib	2477ebe553d3e4d2c606191fe6c33602	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e
+_md5_=8884dc86f050bc771d86c8c4b9b9ba1f

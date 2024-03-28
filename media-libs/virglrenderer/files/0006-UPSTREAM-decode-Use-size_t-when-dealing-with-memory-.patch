@@ -1,0 +1,53 @@
+From e60e154f78460455bf9c33611490f458e03dcbb0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Tue, 25 Apr 2023 15:00:13 +0200
+Subject: [PATCH 6/8] UPSTREAM: decode: Use size_t when dealing with memory
+ size
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Always use the proper size type.
+
+Change-Id: Id44971e7cfdd23d04b94e4f02dac80c874786838
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1096>
+(cherry picked from commit 5e3715597b3cca3572ed57350f55c7062041ba4c)
+---
+ src/vrend_decode.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/vrend_decode.c b/src/vrend_decode.c
+index ca670476..3ab52f97 100644
+--- a/src/vrend_decode.c
++++ b/src/vrend_decode.c
+@@ -1350,7 +1350,7 @@ static int vrend_decode_texture_barrier(struct vrend_context *ctx, const uint32_
+ static int vrend_decode_set_debug_mask(struct vrend_context *ctx, const uint32_t *buf, uint32_t length)
+ {
+    char *flagstring;
+-   int slen = sizeof(uint32_t) * length;
++   size_t slen = sizeof(uint32_t) * length;
+ 
+    if (length < VIRGL_SET_DEBUG_FLAGS_MIN_SIZE)
+       return EINVAL;
+@@ -1605,7 +1605,7 @@ static int vrend_decode_get_memory_info(struct vrend_context *ctx, const uint32_
+ 
+ static int vrend_decode_send_string_marker(struct vrend_context *ctx, const uint32_t *buf, uint32_t length)
+ {
+-   uint32_t buf_len = sizeof(uint32_t) * (length - 1);
++   size_t buf_len = sizeof(uint32_t) * (length - 1);
+ 
+    if (length < VIRGL_SEND_STRING_MARKER_MIN_SIZE) {
+       fprintf(stderr, "minimal command length not okay\n");
+@@ -1614,7 +1614,7 @@ static int vrend_decode_send_string_marker(struct vrend_context *ctx, const uint
+ 
+    uint32_t str_len = get_buf_entry(buf, VIRGL_SEND_STRING_MARKER_STRING_SIZE);
+    if (str_len > buf_len) {
+-       fprintf(stderr, "String len %u > buf_len %u\n", str_len, buf_len);
++       fprintf(stderr, "String len %u > buf_len %zu\n", str_len, buf_len);
+        return EINVAL;
+    }
+ 
+-- 
+2.40.1.495.gc816e09b53d-goog
+

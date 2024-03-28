@@ -1,0 +1,248 @@
+From 573e1f279505a2116c1f45a24dc4fe19ce59f989 Mon Sep 17 00:00:00 2001
+From: Gert Wollny <gert.wollny@collabora.com>
+Date: Wed, 3 May 2023 08:31:39 +0200
+Subject: [PATCH 13/17] UPSTREAM: shader/tgsi: check array access and report
+ failure when needed
+
+Originally in mesa TGSI was never intended to be interfaced from outside
+the library so that one could rely on the code to adhere the limits for
+inputs, outputs etc. However, with virglrenderer we receive TGSI as text
+and the text parser doesn't check the limits, so that the actual TGSI
+might be illegal and result in OOB access.
+
+Since checking these limits when parsing the text would be more tedious,
+check these limits in the tgsi info parser that is always run before when
+the TGSI is translated and report errors.
+
+Closes: https://gitlab.freedesktop.org/virgl/virglrenderer/-/issues/339
+
+v2: fix ws (Corentin)
+
+Change-Id: I111e264c7ffc6c5424648601dc396867f1d6093b
+Signed-off-by: Gert Wollny <gert.wollny@collabora.co.uk>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1105>
+(cherry picked from commit 8d4ef7d3579981f6d9660d0a83dc22b1f1cf9b71)
+---
+ src/gallium/auxiliary/tgsi/tgsi_scan.c | 79 ++++++++++++++++++++++----
+ src/gallium/auxiliary/tgsi/tgsi_scan.h |  2 +-
+ src/vrend_shader.c                     |  4 +-
+ 3 files changed, 72 insertions(+), 13 deletions(-)
+
+diff --git a/src/gallium/auxiliary/tgsi/tgsi_scan.c b/src/gallium/auxiliary/tgsi/tgsi_scan.c
+index f88ac7cb..a1780ccb 100644
+--- a/src/gallium/auxiliary/tgsi/tgsi_scan.c
++++ b/src/gallium/auxiliary/tgsi/tgsi_scan.c
+@@ -50,7 +50,7 @@
+  * registers used, special instructions used, etc.
+  * \return info  the result of the scan
+  */
+-void
++bool
+ tgsi_scan_shader(const struct tgsi_token *tokens,
+                  struct tgsi_shader_info *info)
+ {
+@@ -70,7 +70,7 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+     **/
+    if (tgsi_parse_init( &parse, tokens ) != TGSI_PARSE_OK) {
+       debug_printf("tgsi_parse_init() failed in tgsi_scan_shader()!\n");
+-      return;
++      return false;
+    }
+    procType = parse.FullHeader.Processor.Processor;
+    assert(procType == TGSI_PROCESSOR_FRAGMENT ||
+@@ -122,11 +122,20 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+                const struct tgsi_full_src_register *src0 = &fullinst->Src[0];
+                unsigned input;
+ 
+-               if (src0->Register.Indirect && src0->Indirect.ArrayID)
++               if (src0->Register.Indirect && src0->Indirect.ArrayID) {
++                  if (src0->Indirect.ArrayID >= PIPE_MAX_SHADER_INPUTS) {
++                     debug_printf("TGSI Error: src0->Indirect.ArrayID >= PIPE_MAX_SHADER_INPUTS!");
++                     return false;
++                  }
+                   input = info->input_array_first[src0->Indirect.ArrayID];
+-               else
++               } else
+                   input = src0->Register.Index;
+ 
++               if (input >= PIPE_MAX_SHADER_INPUTS) {
++                  debug_printf("TGSI Error: input %d out of range!", input);
++                  return false;
++               }
++
+                /* For the INTERP opcodes, the interpolation is always
+                 * PERSPECTIVE unless LINEAR is specified.
+                 */
+@@ -181,8 +190,10 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+                         info->input_usage_mask[ind] |= usage_mask;
+                      }
+                   } else {
+-                     assert(ind >= 0);
+-                     assert(ind < PIPE_MAX_SHADER_INPUTS);
++                     if (ind < 0 || ind >= PIPE_MAX_SHADER_INPUTS) {
++                        debug_printf("TGSI Error: input %d out of range.", ind);
++                        return false;
++                     }
+                      info->input_usage_mask[ind] |= usage_mask;
+                   }
+ 
+@@ -241,17 +252,30 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+             const uint file = fulldecl->Declaration.File;
+             uint reg;
+ 
++            if (file >= TGSI_FILE_COUNT) {
++               debug_printf("TGSI: unknown file %d", file);
++               return false;
++            }
++
++
+             if (fulldecl->Declaration.Array) {
+                unsigned array_id = fulldecl->Array.ArrayID;
+ 
+                switch (file) {
+                case TGSI_FILE_INPUT:
+-                  assert(array_id < ARRAY_SIZE(info->input_array_first));
++                  if (array_id >= PIPE_MAX_SHADER_INPUTS) {
++                     debug_printf("TGSI: input array ID %d out of range", array_id);
++                     return false;
++                  }
++
+                   info->input_array_first[array_id] = fulldecl->Range.First;
+                   info->input_array_last[array_id] = fulldecl->Range.Last;
+                   break;
+                case TGSI_FILE_OUTPUT:
+-                  assert(array_id < ARRAY_SIZE(info->output_array_first));
++                  if (array_id >= PIPE_MAX_SHADER_INPUTS) {
++                     debug_printf("TGSI: output array ID %d out of range", array_id);
++                     return false;
++                  }
+                   info->output_array_first[array_id] = fulldecl->Range.First;
+                   info->output_array_last[array_id] = fulldecl->Range.Last;
+                   break;
+@@ -272,11 +296,16 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+                info->file_max[file] = MAX2(info->file_max[file], (int)reg);
+ 
+                if (file == TGSI_FILE_CONSTANT) {
+-                  int buffer = 0;
++                  unsigned buffer = 0;
+ 
+                   if (fulldecl->Declaration.Dimension)
+                      buffer = fulldecl->Dim.Index2D;
+ 
++                  if (buffer >= PIPE_MAX_CONSTANT_BUFFERS) {
++                     debug_printf("TGSI Error: constant buffer id %d out of range", buffer);
++                     return false;
++                  }
++
+                   info->const_file_max[buffer] =
+                         MAX2(info->const_file_max[buffer], (int)reg);
+                }
+@@ -288,6 +317,11 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+                   info->input_cylindrical_wrap[reg] = (ubyte)fulldecl->Interp.CylindricalWrap;
+                   info->num_inputs++;
+ 
++                  if (info->num_inputs >= PIPE_MAX_SHADER_INPUTS) {
++                     debug_printf("TGSI: mnumber of inputs exeeds limit");
++                     return false;
++                  }
++
+                   /* Only interpolated varyings. Don't include POSITION.
+                    * Don't include integer varyings, because they are not
+                    * interpolated.
+@@ -343,6 +377,11 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+                else if (file == TGSI_FILE_SYSTEM_VALUE) {
+                   unsigned index = fulldecl->Range.First;
+ 
++                  if (index >= PIPE_MAX_SHADER_INPUTS) {
++                     debug_printf("TGSI Error: system values exeeds limit");
++                     return false;
++                  }
++
+                   info->system_value_semantic_name[index] = semName;
+                   info->num_system_values = MAX2(info->num_system_values,
+                                                  index + 1);
+@@ -366,10 +405,21 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+                   }
+                }
+                else if (file == TGSI_FILE_OUTPUT) {
++
++                  if (reg >= PIPE_MAX_SHADER_OUTPUTS) {
++                     debug_printf("TGSI Error: output out of range");
++                     return false;
++                  }
++
+                   info->output_semantic_name[reg] = (ubyte) semName;
+                   info->output_semantic_index[reg] = (ubyte) semIndex;
+                   info->num_outputs++;
+ 
++                  if (info->num_outputs >= PIPE_MAX_SHADER_OUTPUTS) {
++                     debug_printf("TGSI Error: number of outputs exeeds limit");
++                     return false;
++                  }
++
+                   if (semName == TGSI_SEMANTIC_COLOR)
+                      info->colors_written |= 1 << semIndex;
+ 
+@@ -430,7 +480,11 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+             unsigned name = fullprop->Property.PropertyName;
+             unsigned value = fullprop->u[0].Data;
+ 
+-            assert(name < ARRAY_SIZE(info->properties));
++            if (name >= ARRAY_SIZE(info->properties)) {
++               debug_printf("TGSI: Unknown property %d\n", name);
++               return false;
++            }
++
+             info->properties[name] = value;
+ 
+             switch (name) {
+@@ -447,7 +501,8 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+          break;
+ 
+       default:
+-         assert( 0 );
++         debug_printf("TGSI: Unknown token type %d\n", parse.FullToken.Token.Type);
++         return false;
+       }
+    }
+ 
+@@ -471,6 +526,8 @@ tgsi_scan_shader(const struct tgsi_token *tokens,
+    }
+ 
+    tgsi_parse_free (&parse);
++
++   return true;
+ }
+ 
+ 
+diff --git a/src/gallium/auxiliary/tgsi/tgsi_scan.h b/src/gallium/auxiliary/tgsi/tgsi_scan.h
+index 0849add4..6f044bce 100644
+--- a/src/gallium/auxiliary/tgsi/tgsi_scan.h
++++ b/src/gallium/auxiliary/tgsi/tgsi_scan.h
+@@ -135,7 +135,7 @@ struct tgsi_shader_info
+    unsigned max_depth;
+ };
+ 
+-extern void
++extern bool
+ tgsi_scan_shader(const struct tgsi_token *tokens,
+                  struct tgsi_shader_info *info);
+ 
+diff --git a/src/vrend_shader.c b/src/vrend_shader.c
+index ec9bcc74..8748a770 100644
+--- a/src/vrend_shader.c
++++ b/src/vrend_shader.c
+@@ -7929,7 +7929,9 @@ bool vrend_convert_shader(const struct vrend_context *rctx,
+    ctx.generic_ios.match.outputs_expected_mask = key->out_generic_expected_mask;
+    ctx.texcoord_ios.match.outputs_expected_mask = key->out_texcoord_expected_mask;
+ 
+-   tgsi_scan_shader(tokens, &ctx.info);
++   if (!tgsi_scan_shader(tokens, &ctx.info))
++      goto fail;
++
+    /* if we are in core profile mode we should use GLSL 1.40 */
+    if (cfg->use_core_profile && cfg->glsl_version >= 140)
+       ctx.glsl_ver_required = require_glsl_ver(&ctx, 140);
+-- 
+2.39.2
+

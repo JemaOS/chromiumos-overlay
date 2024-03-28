@@ -1,0 +1,26 @@
+From a1ecec26e9b617c2d456cf6338022d7229eaf0e9 Mon Sep 17 00:00:00 2001
+From: WalterBai <walter.bai@intel.com>
+Date: Wed, 15 Mar 2023 18:22:29 +0800
+Subject: [PATCH] [Encode] Fix an issue that GopPicSize may be 0
+
+Fix an issue when intra_period in VAAPI is not set, GopPicSize is 0, which may casue divided by 0 issue in Huc BRC update kernel.
+---
+ media_softlet/linux/common/codec/enc/ddi/ddi_encode_avc_specific.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/media_softlet/linux/common/codec/enc/ddi/ddi_encode_avc_specific.cpp b/media_softlet/linux/common/codec/enc/ddi/ddi_encode_avc_specific.cpp
+index 5da01a226bb3..7a4654192b04 100644
+--- a/media_softlet/linux/common/codec/enc/ddi/ddi_encode_avc_specific.cpp
++++ b/media_softlet/linux/common/codec/enc/ddi/ddi_encode_avc_specific.cpp
+@@ -1263,7 +1263,7 @@ VAStatus DdiEncodeAvc::ParseSeqParams(void *ptr)
+     seqParams->bit_depth_luma_minus8   = seq->bit_depth_luma_minus8;
+     seqParams->bit_depth_chroma_minus8 = seq->bit_depth_chroma_minus8;
+ 
+-    seqParams->GopPicSize = seq->intra_period;
++    seqParams->GopPicSize = seq->intra_period ? seq->intra_period : seq->intra_idr_period;
+     seqParams->GopRefDist = seq->ip_period;
+     seqParams->RateControlMethod = VARC2HalRC(m_encodeCtx->uiRCMethod);
+ 
+-- 
+2.7.4
+

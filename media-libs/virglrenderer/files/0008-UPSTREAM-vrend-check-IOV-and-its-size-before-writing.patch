@@ -1,0 +1,36 @@
+From 47c1c34aa63fca26ec85a17cc2f495a0584230be Mon Sep 17 00:00:00 2001
+From: Gert Wollny <gert.wollny@collabora.com>
+Date: Wed, 6 Sep 2023 07:37:12 +0200
+Subject: [PATCH 08/12] UPSTREAM: vrend: check IOV and its size before writing
+ to it
+
+Patch applied as suggested by Kevin King.
+
+Closes: https://gitlab.freedesktop.org/virgl/virglrenderer/-/issues/453
+
+Signed-off-by: Gert Wollny <gert.wollny@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1221>
+(cherry picked from commit b91e7b417672878d4d56dda4aadbd61310a16f2b)
+---
+ src/vrend_renderer.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index f8a44f68..f63d7e9d 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -13071,6 +13071,11 @@ void vrend_renderer_get_meminfo(struct vrend_context *ctx, uint32_t res_handle)
+       return;
+    }
+ 
++   if (!res->iov || res->iov->iov_len < sizeof(struct virgl_memory_info)) {
++       vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_RESOURCE, res_handle);
++       return;
++   }
++
+    info = (struct virgl_memory_info *)res->iov->iov_base;
+ 
+    if (has_feature(feat_nvx_gpu_memory_info)) {
+-- 
+2.42.0.283.g2d96d420d3-goog
+

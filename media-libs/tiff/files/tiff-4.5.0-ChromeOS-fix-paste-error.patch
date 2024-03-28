@@ -1,0 +1,22 @@
+ChromeOS: Include fix for CVE-2022-48281
+Upsream bug: https://bugs.gentoo.org/856478#c10
+From: https://gitlab.com/libtiff/libtiff/-/commit/d1b6b9c1b3cae2d9e37754506c1ad8f4f7b646b5
+
+tiffcrop: Correct simple copy paste error. Fix #488.
+https://gitlab.com/libtiff/libtiff/-/issues/488
+
+heap-buffer-overflow /home/a13579/fuzz_lib_tiff/report/libtiff_asan/libtiff/tif_unix.c:362 in _TIFFmemset results in SIGSEGV
+
+diff --git a/tools/tiffcrop.c b/tools/tiffcrop.c
+index 14fa18da7dbe6920f1cc5bcf5e079ce080eb43a0..7db69883e6c545fa410bac29325cd8fc036a2168 100644
+--- a/tools/tiffcrop.c
++++ b/tools/tiffcrop.c
+@@ -8591,7 +8591,7 @@ static int processCropSelections(struct image_data *image,
+                     cropsize + NUM_BUFF_OVERSIZE_BYTES);
+             else
+             {
+-                prev_cropsize = seg_buffs[0].size;
++                prev_cropsize = seg_buffs[i].size;
+                 if (prev_cropsize < cropsize)
+                 {
+                     next_buff = _TIFFrealloc(

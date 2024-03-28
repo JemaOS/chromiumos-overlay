@@ -1,0 +1,12 @@
+DEFINED_PHASES=compile info install setup unpack
+DESCRIPTION=DLC package for vm tools for termina.
+EAPI=7
+IUSE=kvm_host dlc amd64 arm cros_host cros_workon_tree_
+KEYWORDS=*
+LICENSE=BSD-Google
+REQUIRED_USE=dlc kvm_host ^^ ( amd64 arm arm64 )
+RESTRICT=mirror
+SLOT=0
+SRC_URI=amd64? ( gs://termina-component-testing/uprev-test/amd64/114.15428.0.0/guest-vm-base.tar.xz -> termina_amd64_114.15428.0.0.tar.xz ) arm? ( gs://termina-component-testing/uprev-test/arm/114.15428.0.0/guest-vm-base.tar.xz -> termina_arm_114.15428.0.0.tar.xz ) arm64? ( gs://termina-component-testing/uprev-test/arm/114.15428.0.0/guest-vm-base.tar.xz -> termina_arm_114.15428.0.0.tar.xz )
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-workon	c286b70ed045cd0c9488c299b7c0859d	dlc	cde6454bdd149957ae0d8ba668d3858f	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	multilib	2477ebe553d3e4d2c606191fe6c33602	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e
+_md5_=0f5b82ca0bcdf7d93319eebdc164c8e3

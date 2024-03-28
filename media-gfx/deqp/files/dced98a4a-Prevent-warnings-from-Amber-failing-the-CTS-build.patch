@@ -1,0 +1,39 @@
+From dced98a4acde499350ce4556af430d0b4bcba5ca Mon Sep 17 00:00:00 2001
+From: Charlie Turner <cturner@igalia.com>
+Date: Mon, 23 Jan 2023 13:35:26 +0000
+Subject: [PATCH] Prevent warnings from Amber failing the CTS build
+
+With clang++-16, I'm seeing lots of cases like,
+
+/home/cturner/src/vk-gl-cts/external/amber/src/src/float16_helper.cc:66:42: error: unchecked operation on raw buffer in expression [-Werror,-Wunsafe-buffer-usage]
+  uint32_t sign = (static_cast<uint32_t>(value[1]) & 0x80) << 24U;
+
+Inhibit all warning messages for Clang, GCC & MSVC.
+
+Components: Framework, Vulkan
+
+Change-Id: I1910780048d8828a61733a5f5f36404f8a8184b0
+---
+ external/amber/CMakeLists.txt | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/external/amber/CMakeLists.txt b/external/amber/CMakeLists.txt
+index b78caccf2..4e0975067 100644
+--- a/external/amber/CMakeLists.txt
++++ b/external/amber/CMakeLists.txt
+@@ -10,4 +10,12 @@ set(AMBER_ENABLE_RTTI TRUE CACHE BOOL "Enable runtime type information" FORCE)
+ set(AMBER_CTS_INL_DIR ${PROJECT_BINARY_DIR}/external/vulkancts/framework/vulkan)
+ set(Vulkan-Headers_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../vulkancts/framework/vulkan/)
+ 
++if (DE_COMPILER_IS_GCC OR DE_COMPILER_IS_CLANG)
++       add_compile_options(-w)
++elseif (DE_COMPILER_IS_MSC)
++       add_compile_options(/W0)
++endif ()
++
++
++
+ add_subdirectory(src)
+-- 
+2.40.0.rc1.284.g88254d51c5-goog
+

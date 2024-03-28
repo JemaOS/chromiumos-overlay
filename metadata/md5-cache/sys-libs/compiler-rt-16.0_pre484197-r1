@@ -1,0 +1,12 @@
+DEFINED_PHASES=compile configure info install prepare setup test unpack
+DEPEND=sys-devel/llvm sys-devel/make >=dev-util/cmake-3.9.6
+DESCRIPTION=Compiler runtime library for clang
+EAPI=6
+HOMEPAGE=http://compiler-rt.llvm.org/
+IUSE=+llvm-crt llvm-next llvm-tot continue-on-patch-failure continue-on-patch-failure cros_host cros_workon_tree_
+KEYWORDS=*
+LICENSE=UoI-NCSA
+PROPERTIES=live live
+SLOT=0
+_eclasses_=cmake-utils	91d6ef31dc426240577497cacbf2508c	cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-llvm	b388f5d992b549ad0382c6c926c100ca	cros-workon	c286b70ed045cd0c9488c299b7c0859d	desktop	b1d22ac8bdd4679ab79c71aca235009d	epatch	ed88001f77c6dd0d5f09e45c1a5b480e	estack	686eaab303305a908fd57b2fd7617800	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	ltprune	2729691420b6deeda2a90b1f1183fb55	multilib	2477ebe553d3e4d2c606191fe6c33602	multiprocessing	c3cf317581e5bd068a4b851f03dd8cba	ninja-utils	132cbb376048d079b5a012f5467c4e7f	preserve-libs	ef207dc62baddfddfd39a164d9797648	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e	vcs-clean	2a0f74a496fa2b1552c4f3398258b7bf	xdg-utils	ff2ff954e6b17929574eee4efc5152ba
+_md5_=28d1f0cc8626150b27982019137a2907

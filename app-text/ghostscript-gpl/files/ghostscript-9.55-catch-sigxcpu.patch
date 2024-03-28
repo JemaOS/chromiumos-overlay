@@ -1,0 +1,41 @@
+Catch the SIGXCPU signal to gs and handle it by terminating the application with
+an exit code 126. This value is later detected in foomatic_shell.
+
+--- a/psi/gs.c
++++ b/psi/gs.c
+@@ -13,6 +13,8 @@
+    CA 94945, U.S.A., +1(415)492-9861, for further information.
+ */
+ 
++#include <signal.h>
++#include <unistd.h>
+ 
+ /* 'main' program for Ghostscript */
+ #include "ghost.h"
+@@ -64,12 +66,25 @@ commit_stack_pages( void )
+ }
+ #endif
+ 
++static void
++exit_with_126(int)
++{
++    _exit(126);
++}
++
+ int
+ main(int argc, char *argv[])
+ {
++    struct sigaction action_xcpu = {exit_with_126, NULL, 0, 0, NULL};
+     int exit_status, code;
+     void *minst = NULL;
+ 
++    /*
++     * Catch SIGXCPU signal and handle it by terminating the application
++     * with an exit code equals 126.
++     */
++    sigaction(SIGXCPU, &action_xcpu, NULL);
++
+ #ifdef NEED_COMMIT_STACK   /* hack for bug in gcc 2.96 */
+     commit_stack_pages();
+ #endif
+

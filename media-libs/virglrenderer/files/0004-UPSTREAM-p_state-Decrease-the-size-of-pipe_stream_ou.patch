@@ -1,0 +1,64 @@
+From dc980378d7565828b5a57220f7fc8f1ea3c038e8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Tue, 25 Apr 2023 15:39:28 +0200
+Subject: [PATCH 4/8] UPSTREAM: p_state: Decrease the size of
+ pipe_stream_output_info and split its structure
+
+Mostly applying Mesa commits 81d0dc5e551fdc7da4cef6be482f8d2ce78f6999 and
+19bc74f5130e2861365098cf07b2d9abd634c380 that reduce the number of max shader
+stream outputs to 64.
+
+It was already the case in the code so applying it to the holding structure
+makes sense.
+
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1098>
+(cherry picked from commit 748c5881d25f7213e2000a7f1555f529164cbe99)
+Change-Id: I557325a08a807a4b0a5c18dc01e3396a17691c6a
+---
+ src/gallium/include/pipe/p_state.h | 23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+diff --git a/src/gallium/include/pipe/p_state.h b/src/gallium/include/pipe/p_state.h
+index 48d5a263..030d4ec4 100644
+--- a/src/gallium/include/pipe/p_state.h
++++ b/src/gallium/include/pipe/p_state.h
+@@ -187,6 +187,19 @@ struct pipe_clip_state
+    float ucp[PIPE_MAX_CLIP_PLANES][4];
+ };
+ 
++/**
++ * A single output for vertex transform feedback.
++ */
++struct pipe_stream_output
++{
++   unsigned register_index:6;  /**< 0 to 63 (OUT index) */
++   unsigned start_component:2; /** 0 to 3 */
++   unsigned num_components:3;  /** 1 to 4 */
++   unsigned output_buffer:3;   /**< 0 to PIPE_MAX_SO_BUFFERS */
++   unsigned dst_offset:16;     /**< offset into the buffer in dwords */
++   unsigned stream:2;          /**< 0 to 3 */
++   unsigned need_temp:1;
++};
+ 
+ /**
+  * Stream output for vertex transform feedback.
+@@ -201,15 +214,7 @@ struct pipe_stream_output_info
+     * Array of stream outputs, in the order they are to be written in.
+     * Selected components are tightly packed into the output buffer.
+     */
+-   struct {
+-      unsigned register_index:8;  /**< 0 to PIPE_MAX_SHADER_OUTPUTS */
+-      unsigned start_component:2; /** 0 to 3 */
+-      unsigned num_components:3;  /** 1 to 4 */
+-      unsigned output_buffer:3;   /**< 0 to PIPE_MAX_SO_BUFFERS */
+-      unsigned dst_offset:16;     /**< offset into the buffer in dwords */
+-      unsigned stream:2;
+-      unsigned need_temp:1;
+-   } output[PIPE_MAX_SO_OUTPUTS];
++   struct pipe_stream_output output[PIPE_MAX_SO_OUTPUTS];
+ };
+ 
+ 
+-- 
+2.40.1.495.gc816e09b53d-goog
+

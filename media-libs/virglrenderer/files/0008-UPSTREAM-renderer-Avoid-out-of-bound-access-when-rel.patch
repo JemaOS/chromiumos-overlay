@@ -1,0 +1,34 @@
+From 586ad04738d2e4c556104c7464e0c1ba7c2cbcf0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Fri, 28 Apr 2023 10:06:49 +0200
+Subject: [PATCH 8/8] UPSTREAM: renderer: Avoid out-of-bound access when
+ releasing ssbos
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fixes: bbc0bf092a7f705dd8357adecee0207545ff1754
+Change-Id: I99fec90cae0d134c807164e3bb8e1129e19bf783
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1101>
+(cherry picked from commit be7ef53c4870532754acbb67083928307f99d05a)
+---
+ src/vrend_renderer.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index e6888c01..d59aec57 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -7406,7 +7406,7 @@ static void vrend_destroy_sub_context(struct vrend_sub_context *sub)
+ 
+    if (has_feature(feat_ssbo)) {
+       for (int shader_type = PIPE_SHADER_VERTEX;
+-           shader_type <= PIPE_SHADER_TYPES;
++           shader_type < PIPE_SHADER_TYPES;
+            shader_type++) {
+          uint32_t mask = sub->ssbo_used_mask[shader_type];
+          while (mask) {
+-- 
+2.40.1.495.gc816e09b53d-goog
+

@@ -1,0 +1,36 @@
+commit 8b1217db00ef470f850dada57ed42603a6908cfd
+Author: Manoj Gupta <manojgupta@google.com>
+Date:   Mon Apr 3 12:03:08 2023 -0700
+
+    Revert "Fix build error with LLVM 16."
+    
+    This reverts commit 3cc7a31347a2bddda298dd035886460c55ee202e.
+
+diff --git a/clang_delta/ExpressionDetector.cpp b/clang_delta/ExpressionDetector.cpp
+index 638ea69..d608ae9 100644
+--- a/clang_delta/ExpressionDetector.cpp
++++ b/clang_delta/ExpressionDetector.cpp
+@@ -68,10 +68,8 @@ public:
+                           CharSourceRange FilenameRange,
+ #if LLVM_VERSION_MAJOR < 15
+                           const FileEntry *File,
+-#elif LLVM_VERSION_MAJOR < 16
+-                          Optional<FileEntryRef> File,
+ #else
+-                          OptionalFileEntryRef File,
++                          Optional<FileEntryRef> File,
+ #endif
+                           StringRef SearchPath, StringRef RelativePath,
+                           const Module *Imported,
+@@ -94,10 +92,8 @@ void IncludesPPCallbacks::InclusionDirective(SourceLocation HashLoc,
+                                              CharSourceRange /*FilenameRange*/,
+ #if LLVM_VERSION_MAJOR < 15
+                                              const FileEntry * /*File*/,
+-#elif LLVM_VERSION_MAJOR < 16
+-                                             Optional<FileEntryRef> /*File*/,
+ #else
+-                                             OptionalFileEntryRef /*File*/,
++                                             Optional<FileEntryRef> /*File*/,
+ #endif
+                                              StringRef /*SearchPath*/,
+                                              StringRef /*RelativePath*/,

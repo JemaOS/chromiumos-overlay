@@ -1,0 +1,14 @@
+BDEPEND=dev-vcs/git
+DEFINED_PHASES=compile configure info install prepare setup test unpack
+DEPEND=rustc-demangle? ( dev-rust/rustc-demangle-capi ) net-misc/curl:= test? ( dev-cpp/gtest:= )
+DESCRIPTION=Google crash reporting
+EAPI=7
+HOMEPAGE=https://chromium.googlesource.com/breakpad/breakpad
+IUSE=-alltests cros_host +rustc-demangle test cros_host cros_workon_tree_9c30d334efd286e2a8fa85147fab8a27172de66f_6e72d83d88350579148b2e68d98a74ff81931a1a cros_arm64 cros_i686 asan coverage fuzzer msan tsan ubsan
+KEYWORDS=*
+LICENSE=BSD-Google
+PROPERTIES=live
+RDEPEND=rustc-demangle? ( dev-rust/rustc-demangle-capi ) net-misc/curl:=
+SLOT=0/2023.01.27.203621-r219
+_eclasses_=cros-arm64	b1784db5bc1bd081527246d608465a3d	cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-i686	c48c355ff65a11767a2a29c5c4088f0d	cros-sanitizers	02391973ba1e60a0fca5b96f94f4beff	cros-workon	c286b70ed045cd0c9488c299b7c0859d	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	multilib	2477ebe553d3e4d2c606191fe6c33602	multiprocessing	c3cf317581e5bd068a4b851f03dd8cba	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e
+_md5_=a4f2a07def951b1d5214fa468f86876d

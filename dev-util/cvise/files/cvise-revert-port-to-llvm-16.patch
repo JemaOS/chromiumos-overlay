@@ -1,0 +1,72 @@
+commit 8ce8150953c77aeaa28a8fe13c16800ec1638e86
+Author: Manoj Gupta <manojgupta@google.com>
+Date:   Mon Apr 3 11:59:07 2023 -0700
+
+    Revert "Port to LLVM ToT."
+    
+    This reverts commit 05f47890650224ebbd9572000a5f774efb48e0d2.
+
+diff --git a/clang_delta/CommonRenameClassRewriteVisitor.h b/clang_delta/CommonRenameClassRewriteVisitor.h
+index 90a3144..ba860d9 100644
+--- a/clang_delta/CommonRenameClassRewriteVisitor.h
++++ b/clang_delta/CommonRenameClassRewriteVisitor.h
+@@ -420,13 +420,8 @@ bool CommonRenameClassRewriteVisitor<T>::TraverseTemplateArgumentLoc(
+     return getDerived().TraverseStmt(ArgLoc.getSourceExpression());
+ 
+   case TemplateArgument::Pack:
+-    return getDerived().TraverseTemplateArguments(
+-#if LLVM_VERSION_MAJOR >= 16
+-        Arg.pack_elements()
+-#else
+-        Arg.pack_begin(), Arg.pack_size()
+-#endif
+-        );
++    return getDerived().TraverseTemplateArguments(Arg.pack_begin(),
++                                                  Arg.pack_size());
+   }
+ 
+   return true;
+diff --git a/clang_delta/RemoveNestedFunction.cpp b/clang_delta/RemoveNestedFunction.cpp
+index 3df0c5c..b67725c 100644
+--- a/clang_delta/RemoveNestedFunction.cpp
++++ b/clang_delta/RemoveNestedFunction.cpp
+@@ -183,21 +183,21 @@ void RemoveNestedFunction::getVarStrForTemplateSpecialization(
+        std::string &VarStr,
+        const TemplateSpecializationType *TST)
+ {
+-  unsigned NumArgs = TST->template_arguments().size();
++  unsigned NumArgs = TST->getNumArgs();
+   if (NumArgs == 0) {
+     return;
+   }
+ 
+   std::string ArgStr;
+   llvm::raw_string_ostream Stream(ArgStr);
+-  TST->template_arguments()[0].print(getPrintingPolicy(), Stream
++  TST->getArg(0).print(getPrintingPolicy(), Stream
+ #if LLVM_VERSION_MAJOR >= 13
+       , false
+ #endif
+       );
+ 
+   for (unsigned I = 1; I < NumArgs; ++I) {
+-    const TemplateArgument &Arg = TST->template_arguments()[I];
++    const TemplateArgument &Arg = TST->getArg(I);
+     Stream << ", ";
+     Arg.print(getPrintingPolicy(), Stream
+ #if LLVM_VERSION_MAJOR >= 13
+diff --git a/clang_delta/Transformation.cpp b/clang_delta/Transformation.cpp
+index a46eca7..ac04325 100644
+--- a/clang_delta/Transformation.cpp
++++ b/clang_delta/Transformation.cpp
+@@ -1043,8 +1043,8 @@ bool Transformation::getDependentNameTypeString(
+   const TemplateArgument *Args = NULL;
+   if (const TemplateSpecializationType *TST =
+       Ty->getAs<TemplateSpecializationType>()) {
+-    NumArgs = TST->template_arguments().size();
+-    Args = TST->template_arguments().data();
++    NumArgs = TST->getNumArgs();
++    Args = TST->getArgs();
+   }
+   return getTypedefString(IdInfo->getName(),
+            BaseDef, Args, NumArgs, Str, Typename);

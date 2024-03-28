@@ -1,0 +1,57 @@
+From d95b12e7e3ed6a22f284afbc5d2356365b820ea8 Mon Sep 17 00:00:00 2001
+From: Tejas Upadhyay <tejaskumarx.surendrakumar.upadhyay@intel.com>
+Date: Thu, 21 Apr 2022 22:34:52 +0530
+Subject: [PATCH] UPSTREAM: intel: Add support for RPLP
+
+Add RPLP platform support and PCIIDs
+
+Ported-from: https://cgit.freedesktop.org/mesa/drm/commit/?id=d95b12e7e3ed6a22f284afbc5d2356365b820ea8
+
+Reviewed-by: Lionel Landwerlin <lionel.g.landwerlin@intel.com>
+Signed-off-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
+Signed-off-by: Tejas Upadhyay <tejaskumarx.surendrakumar.upadhyay@intel.com>
+Signed-off-by: Raviteja Goud Talla <ravitejax.goud.talla@intel.com>
+---
+ intel/i915_pciids.h   | 9 +++++++++
+ intel/intel_chipset.c | 3 ++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/intel/i915_pciids.h b/intel/i915_pciids.h
+index 8076d40c977b..3301772606ab 100644
+--- a/intel/i915_pciids.h
++++ b/intel/i915_pciids.h
+@@ -666,6 +666,15 @@
+ 	INTEL_VGA_DEVICE(0x46C2, info), \
+ 	INTEL_VGA_DEVICE(0x46C3, info)
+ 
++/* RPL-P */
++#define INTEL_RPLP_IDS(info) \
++	INTEL_VGA_DEVICE(0xA720, info), \
++	INTEL_VGA_DEVICE(0xA721, info), \
++	INTEL_VGA_DEVICE(0xA7A0, info), \
++	INTEL_VGA_DEVICE(0xA7A1, info), \
++	INTEL_VGA_DEVICE(0xA7A8, info), \
++	INTEL_VGA_DEVICE(0xA7A9, info)
++
+ /* ADL-N */
+ #define INTEL_ADLN_IDS(info) \
+ 	INTEL_VGA_DEVICE(0x46D0, info), \
+diff --git a/intel/intel_chipset.c b/intel/intel_chipset.c
+index 99ad04ae011e..ee8866c1bbca 100644
+--- a/intel/intel_chipset.c
++++ b/intel/intel_chipset.c
+@@ -35,9 +35,10 @@ static const struct pci_device {
+ 	uint16_t gen;
+ } pciids[] = {
+ 	/* Keep ids sorted by gen; latest gen first */
+-	INTEL_RPLS_IDS(12),
+ 	INTEL_ADLN_IDS(12),
++	INTEL_RPLP_IDS(12),
+ 	INTEL_ADLP_IDS(12),
++	INTEL_RPLS_IDS(12),
+ 	INTEL_ADLS_IDS(12),
+ 	INTEL_RKL_IDS(12),
+ 	INTEL_DG1_IDS(12),
+-- 
+2.25.1
+

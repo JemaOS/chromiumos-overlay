@@ -1,0 +1,63 @@
+From 08ee830886e7eea7a9beff574533a7255bdee5a8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Tue, 8 Aug 2023 17:59:57 +0200
+Subject: [PATCH 13/16] renderer: Make vrend_depth_test_enable take a sub_ctx
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Allows to reduce the number of pointer dereferences.
+
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1196>
+---
+ src/vrend_renderer.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index 108c7869..2fb9fe61 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -1411,10 +1411,10 @@ static void vrend_use_program(struct vrend_sub_context *sub_ctx,
+    }
+ }
+ 
+-static void vrend_depth_test_enable(struct vrend_context *ctx, bool depth_test_enable)
++static void vrend_depth_test_enable(struct vrend_sub_context *sub_ctx, bool depth_test_enable)
+ {
+-   if (ctx->sub->depth_test_enabled != depth_test_enable) {
+-      ctx->sub->depth_test_enabled = depth_test_enable;
++   if (sub_ctx->depth_test_enabled != depth_test_enable) {
++      sub_ctx->depth_test_enabled = depth_test_enable;
+       if (depth_test_enable)
+          glEnable(GL_DEPTH_TEST);
+       else
+@@ -6371,14 +6371,14 @@ static void vrend_hw_emit_dsa(struct vrend_context *ctx)
+    struct pipe_depth_stencil_alpha_state *state = &ctx->sub->dsa_state;
+ 
+    if (state->depth.enabled) {
+-      vrend_depth_test_enable(ctx, true);
++      vrend_depth_test_enable(ctx->sub, true);
+       glDepthFunc(GL_NEVER + state->depth.func);
+       if (state->depth.writemask)
+          glDepthMask(GL_TRUE);
+       else
+          glDepthMask(GL_FALSE);
+    } else
+-      vrend_depth_test_enable(ctx, false);
++      vrend_depth_test_enable(ctx->sub, false);
+ 
+    if (state->alpha.enabled) {
+       vrend_alpha_test_enable(ctx->sub, true);
+@@ -9031,7 +9031,7 @@ static int vrend_renderer_transfer_write_iov(struct vrend_context *ctx,
+          glDrawBuffers(1, &buffers);
+          glDisable(GL_BLEND);
+ 
+-         vrend_depth_test_enable(ctx, false);
++         vrend_depth_test_enable(ctx->sub, false);
+          vrend_alpha_test_enable(ctx->sub, false);
+          vrend_stencil_test_enable(ctx->sub, false);
+ 
+-- 
+2.39.2
+

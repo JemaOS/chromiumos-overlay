@@ -1,0 +1,14 @@
+BDEPEND=dev-vcs/git
+DEFINED_PHASES=info install preinst setup unpack
+DEPEND=sys-apps/baselayout
+DESCRIPTION=Touch firmware and config updater
+EAPI=7
+HOMEPAGE=https://www.chromium.org/chromium-os
+IUSE=input_devices_synaptics input_devices_wacom input_devices_etphidiap input_devices_st input_devices_st_touchscreen input_devices_weida input_devices_goodix input_devices_sis input_devices_pixart input_devices_g2touch input_devices_cirque input_devices_elan_i2chid input_devices_melfas input_devices_emright input_devices_eps2pstiap input_devices_zinitix input_devices_himax input_devices_nvt_ts cros_host cros_workon_tree_33f3925593181fba8696f19122b812243c6c27ee_5fc70fa1ab5007b5cae0ec721ff6436086d7036f
+KEYWORDS=*
+LICENSE=BSD-Google
+PROPERTIES=live
+RDEPEND=chromeos-base/chromeos-touch-common input_devices_synaptics? ( chromeos-base/rmi4utils ) input_devices_wacom? ( chromeos-base/wacom_fw_flash ) input_devices_etphidiap? ( chromeos-base/chromeos-touch-etphidiap ) input_devices_st? ( chromeos-base/st_flash ) input_devices_st_touchscreen? ( chromeos-base/chromeos-touch-stupdate ) input_devices_weida? ( chromeos-base/weida_wdt_util ) input_devices_goodix? ( chromeos-base/gdix_hid_firmware_update ) input_devices_sis? ( chromeos-base/sisConsoletool ) input_devices_pixart? ( chromeos-base/pixart_tpfwup ) input_devices_g2touch? ( chromeos-base/g2update_tool ) input_devices_cirque? ( chromeos-base/cirque_fw_update ) input_devices_elan_i2chid? ( chromeos-base/elan_i2chid_tools ) input_devices_melfas? ( chromeos-base/mfs-console-tool ) input_devices_emright? ( chromeos-base/emright_fw_updater ) input_devices_eps2pstiap? ( chromeos-base/epstps2iap ) input_devices_zinitix? ( chromeos-base/zinitix_fw_updater ) input_devices_himax? ( chromeos-base/hx_hid_util ) input_devices_nvt_ts? ( chromeos-base/chromeos-nvt-touch-updater ) sys-apps/baselayout
+SLOT=0/0
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-workon	c286b70ed045cd0c9488c299b7c0859d	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	multilib	2477ebe553d3e4d2c606191fe6c33602	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e	user	4e2ffee100481639425c80355dd60c7b
+_md5_=e63f5b7a3a37abf5f75925ea486a5e5e

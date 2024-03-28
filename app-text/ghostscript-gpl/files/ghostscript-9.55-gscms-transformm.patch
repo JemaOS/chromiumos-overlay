@@ -1,0 +1,12 @@
+diff -ruaN ghostscript-9.55.0.orig/base/gsicc_lcms2.c ghostscript-9.55.0/base/gsicc_lcms2.c
+--- ghostscript-9.55.0.orig/base/gsicc_lcms2.c	2021-09-27 01:44:02.000000000 -0600
++++ ghostscript-9.55.0/base/gsicc_lcms2.c	2022-01-26 14:05:36.094067765 -0700
+@@ -462,7 +462,7 @@
+ gscms_transform_color(gx_device *dev, gsicc_link_t *icclink, void *inputcolor,
+                              void *outputcolor, int num_bytes)
+ {
+-    return gscms_transformm_color_const(dev, icclink, inputcolor, outputcolor, num_bytes);
++    return gscms_transform_color_const(dev, icclink, inputcolor, outputcolor, num_bytes);
+ }
+ 
+ int

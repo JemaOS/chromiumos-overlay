@@ -1,0 +1,40 @@
+From 6a595b3cf8396dee040d5da8b2add61fcbf7d23d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Fri, 25 Aug 2023 12:28:49 +0200
+Subject: [PATCH 16/16] renderer: Change the current subcontext to the
+ currently deleted one on context destruction
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Make sure to never leave dangling pointers and free subcontexts from the last to
+the first to make sure that we are freeing the context 0 in last.
+
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1196>
+---
+ src/vrend_renderer.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index 1acdc017..16b7f432 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -7671,8 +7671,13 @@ void vrend_destroy_context(struct vrend_context *ctx)
+ 
+    vrend_set_index_buffer(ctx, 0, 0, 0);
+ 
+-   LIST_FOR_EACH_ENTRY_SAFE(sub, tmp, &ctx->sub_ctxs, head)
++   LIST_FOR_EACH_ENTRY_SAFE_REV(sub, tmp, &ctx->sub_ctxs, head) {
++      ctx->sub = sub;
+       vrend_destroy_sub_context(sub);
++   }
++   ctx->sub = NULL;
++   ctx->sub0 = NULL;
++
+    if(ctx->ctx_id)
+       vrend_renderer_force_ctx_0();
+ 
+-- 
+2.39.2
+

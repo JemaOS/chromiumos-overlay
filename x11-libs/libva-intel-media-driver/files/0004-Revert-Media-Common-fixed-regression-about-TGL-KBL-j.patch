@@ -1,0 +1,97 @@
+From 905a67700acb6f5a37eea9c93ad29f071baaacf8 Mon Sep 17 00:00:00 2001
+From: Juston Li <juston.li@intel.com>
+Date: Tue, 24 May 2022 10:08:06 -0700
+Subject: [PATCH 1/2] Revert "[Media Common] fixed regression about TGL/KBL
+ jpeg from DdiMedia_GetImage"
+
+This reverts commit fce936af16da67ccb9327ad1fa023cec769df00a.
+---
+ media_driver/linux/common/ddi/media_libva.cpp | 43 ++-----------------
+ 1 file changed, 4 insertions(+), 39 deletions(-)
+
+diff --git a/media_driver/linux/common/ddi/media_libva.cpp b/media_driver/linux/common/ddi/media_libva.cpp
+index e821b1a44179..865f9a97c47f 100755
+--- a/media_driver/linux/common/ddi/media_libva.cpp
++++ b/media_driver/linux/common/ddi/media_libva.cpp
+@@ -5174,9 +5174,8 @@ static VAStatus DdiMedia_CopySurfaceToImage(
+     PDDI_MEDIA_CONTEXT mediaCtx = DdiMedia_GetMediaContext(ctx);
+     DDI_CHK_NULL(mediaCtx,  "nullptr mediaCtx.",    VA_STATUS_ERROR_INVALID_CONTEXT);
+     DDI_CHK_NULL(surface,  "nullptr meida surface.", VA_STATUS_ERROR_INVALID_BUFFER);
+-    uint32_t flag = MOS_LOCKFLAG_READONLY;
+-    VAStatus vaStatus = VA_STATUS_SUCCESS;
+ 
++    VAStatus vaStatus = VA_STATUS_SUCCESS;
+     //Lock Surface
+     if ((Media_Format_CPU != surface->format))
+     {
+@@ -5187,12 +5186,7 @@ static VAStatus DdiMedia_CopySurfaceToImage(
+             DDI_NORMALMESSAGE("surface Decompression fail, continue next steps.");
+         }
+     }
+-
+-    if (image->format.fourcc != VA_FOURCC_NV12)
+-       flag = flag | MOS_LOCKFLAG_NO_SWIZZLE;
+-
+-    void* surfData = DdiMediaUtil_LockSurface(surface, flag);
+-
++    void *surfData = DdiMediaUtil_LockSurface(surface, MOS_LOCKFLAG_READONLY);
+     if (surfData == nullptr)
+     {
+         DDI_ASSERTMESSAGE("nullptr surfData.");
+@@ -5211,28 +5205,7 @@ static VAStatus DdiMedia_CopySurfaceToImage(
+     uint8_t *ySrc = nullptr;
+     uint8_t *yDst = (uint8_t*)imageData;
+ 
+-    uint8_t* swizzleData = nullptr;
+-
+-    if (!surface->pMediaCtx->bIsAtomSOC && surface->TileType != I915_TILING_NONE && image->format.fourcc != VA_FOURCC_NV12)
+-    {
+-        swizzleData = (uint8_t*)MOS_AllocMemory(surface->data_size);
+-        if (nullptr != swizzleData)
+-        {
+-            SwizzleSurface(surface->pMediaCtx, surface->pGmmResourceInfo, surfData, (MOS_TILE_TYPE)surface->TileType, (uint8_t*)swizzleData, false);
+-            ySrc = swizzleData;
+-        }
+-        else
+-        {
+-             DDI_ASSERTMESSAGE("nullptr swizzleData.");
+-             DdiMedia_UnmapBuffer(ctx, image->buf);
+-             DdiMediaUtil_UnlockSurface(surface);
+-             return VA_STATUS_ERROR_INVALID_BUFFER;
+-        }
+-    }
+-    else
+-    {
+-        ySrc = (uint8_t*)surfData;
+-    }
++    ySrc = (uint8_t*)surfData;
+ 
+     DdiMedia_CopyPlane(yDst, image->pitches[0], ySrc, surface->iPitch, image->height);
+     if (image->num_planes > 1)
+@@ -5255,11 +5228,6 @@ static VAStatus DdiMedia_CopySurfaceToImage(
+         }
+     }
+ 
+-    if (nullptr != swizzleData)
+-    {
+-        MOS_FreeMemory(swizzleData);
+-        swizzleData = nullptr;
+-    }
+     vaStatus = DdiMedia_UnmapBuffer(ctx, image->buf);
+     if (vaStatus != VA_STATUS_SUCCESS)
+     {
+@@ -5335,10 +5303,7 @@ VAStatus DdiMedia_GetImage(
+     VASurfaceID output_surface = surface;
+ 
+     if (inputSurface->format != DdiMedia_OsFormatToMediaFormat(vaimg->format.fourcc, vaimg->format.alpha_mask) ||
+-        (width != vaimg->width || height != vaimg->height) &&
+-        (vaimg->format.fourcc != VA_FOURCC_444P &&
+-        vaimg->format.fourcc != VA_FOURCC_422V &&
+-        vaimg->format.fourcc != VA_FOURCC_422H))
++        width != vaimg->width || height != vaimg->height)
+     {
+         VAContextID context = VA_INVALID_ID;
+         //Create VP Context.
+-- 
+2.35.3
+

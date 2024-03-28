@@ -1,0 +1,13 @@
+DEFINED_PHASES=compile configure install prepare setup unpack
+DEPEND=net-print/cups x11-libs/libdrm
+DESCRIPTION=The ICU library copied from chrome/third_party
+EAPI=7
+HOMEPAGE=https://cs.chromium.org/chromium/src/third_party/icu/
+IUSE=asan chrome_internal component_build cups +libcxx msan neon +runhooks thinlto ubsan verbose xkbcommon chrome_internal asan coverage fuzzer msan tsan ubsan
+KEYWORDS=~*
+LICENSE=icu-58
+RDEPEND=!dev-libs/icu !<chromeos-base/chromeos-chrome-83.0.4098.4 xkbcommon? ( x11-libs/libxkbcommon x11-misc/xkeyboard-config )
+RESTRICT=network-sandbox mirror
+SLOT=0/9999
+_eclasses_=binutils-funcs	8a78951d3d64239c136ad8ea85e8ab5c	chromium-source	8ac831c25404a02e71650a8b320ac232	cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-sanitizers	02391973ba1e60a0fca5b96f94f4beff	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	multilib	2477ebe553d3e4d2c606191fe6c33602	multiprocessing	c3cf317581e5bd068a4b851f03dd8cba	python-any-r1	54a3178500786b0a7ede4a23b7f2a6ad	python-utils-r1	5bd4686cbe063e46fff90664cfc1a5a1	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e
+_md5_=8b80355e4bf2d4c1217654510af9ea08

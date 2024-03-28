@@ -1,0 +1,87 @@
+From d55caf96e5d42e25217be2077993ff7e8e02d70b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Wed, 7 Jun 2023 19:34:59 +0200
+Subject: [PATCH 22/22] UPSTREAM: shader: Do some basic sanity checks in
+ emit_ios and return early on failure
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Allows to just reject the shader in case the provided shader is corrupted.
+
+Change-Id: I067b764b03ea00c54b46f1ec1d0bf73a4344ec56
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1143>
+(cherry picked from commit e5790d03d3eec349b150c67d5a5557d47a18c62a)
+---
+ src/vrend_shader.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/src/vrend_shader.c b/src/vrend_shader.c
+index ffc69399..2f8f148c 100644
+--- a/src/vrend_shader.c
++++ b/src/vrend_shader.c
+@@ -6877,11 +6877,23 @@ emit_ios_generic_outputs(const struct dump_ctx *ctx,
+                                                       &ctx->key->fs_info, ctx->key->flatshade);
+ 
+          if (ctx->outputs[i].name == TGSI_SEMANTIC_COLOR) {
++            if (ctx->outputs[i].sid >= 64) {
++               vrend_printf("Number of output id exceeded, max is 64\n");
++               set_buf_error(glsl_strbufs);
++               return;
++            }
++
+             front_back_color_emitted_flags[ctx->outputs[i].sid] |= FRONT_COLOR_EMITTED;
+             fc_emitted |= 1ull << ctx->outputs[i].sid;
+          }
+ 
+          if (ctx->outputs[i].name == TGSI_SEMANTIC_BCOLOR) {
++            if (ctx->outputs[i].sid >= 64) {
++               vrend_printf("Number of output id exceeded, max is 64\n");
++               set_buf_error(glsl_strbufs);
++               return;
++            }
++
+             front_back_color_emitted_flags[ctx->outputs[i].sid] |= BACK_COLOR_EMITTED;
+             bc_emitted |= 1ull << ctx->outputs[i].sid;
+          }
+@@ -6962,6 +6974,8 @@ static void emit_ios_vs(const struct dump_ctx *ctx,
+    emit_ios_generic_outputs(ctx, glsl_strbufs, generic_ios, texcoord_ios,
+                             front_back_color_emitted_flags, force_color_two_side,
+                             can_emit_generic_default);
++   if (strbuf_get_error(&glsl_strbufs->glsl_main))
++      return;
+ 
+    if (ctx->key->color_two_side || ctx->force_color_two_side) {
+       bool fcolor_emitted, bcolor_emitted;
+@@ -7315,6 +7329,8 @@ static void emit_ios_geom(const struct dump_ctx *ctx,
+    emit_ios_generic_outputs(ctx, glsl_strbufs, generic_ios, texcoord_ios,
+                             front_back_color_emitted_flags, force_color_two_side,
+                             can_emit_generic_geom);
++   if (strbuf_get_error(&glsl_strbufs->glsl_main))
++      return;
+ 
+    emit_ios_per_vertex_in(ctx, glsl_strbufs, has_pervertex);
+ 
+@@ -7438,6 +7454,8 @@ static void emit_ios_tes(const struct dump_ctx *ctx,
+    emit_ios_generic_outputs(ctx, glsl_strbufs, generic_ios, texcoord_ios,
+                             front_back_color_emitted_flags, force_color_two_side,
+                             can_emit_generic_default);
++   if (strbuf_get_error(&glsl_strbufs->glsl_main))
++      return;
+ 
+    emit_ios_per_vertex_in(ctx, glsl_strbufs, has_pervertex);
+    emit_ios_per_vertex_out(ctx, glsl_strbufs, "");
+@@ -7550,6 +7568,9 @@ static int emit_ios(const struct dump_ctx *ctx,
+       return glsl_ver_required;
+    }
+ 
++   if (strbuf_get_error(&glsl_strbufs->glsl_main))
++      return glsl_ver_required;
++
+    const struct sematic_info generic = {TGSI_SEMANTIC_GENERIC, 'g'};
+    const struct sematic_info texcoord = {TGSI_SEMANTIC_TEXCOORD, 't'};
+ 
+-- 
+2.41.0.162.gfafddb0af9-goog
+

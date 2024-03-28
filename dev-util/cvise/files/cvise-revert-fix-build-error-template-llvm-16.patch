@@ -1,0 +1,38 @@
+commit b792759006405fc84d93f3ebc65cd4b78b2d27c3
+Author: Manoj Gupta <manojgupta@google.com>
+Date:   Mon Apr 3 12:06:51 2023 -0700
+
+    Revert "Fix LLVM 16 build."
+    
+    This reverts commit 7c1f0b44034f6d00f1bcb548efc338c2356325b3.
+
+diff --git a/clang_delta/TemplateArgToInt.cpp b/clang_delta/TemplateArgToInt.cpp
+index 304257e..2a72e67 100644
+--- a/clang_delta/TemplateArgToInt.cpp
++++ b/clang_delta/TemplateArgToInt.cpp
+@@ -357,16 +357,9 @@ void TemplateArgToInt::handleOneType(const Type *Ty)
+   if (!SubstType)
+     return;
+ 
+-#if LLVM_VERSION_MAJOR >= 16
+-  const TemplateTypeParmDecl *ParmDecl = SubstType->getReplacedParameter();
+-  unsigned parmIndex = SubstType->getIndex();
+-#else
+   const TemplateTypeParmType *ParmType = SubstType->getReplacedParameter();
+   TemplateTypeParmDecl *ParmDecl = ParmType->getDecl();
+-  unsigned parmIndex = ParmType->getIndex();
+-#endif
+   TransAssert(ParmDecl && "Invalid ParmDecl!");
+-
+   const TemplateDecl *TmplD = ParamToTemplateDecl[ParmDecl];
+   if (TmplD == NULL) {
+     const DeclContext *Ctx = ParmDecl->getDeclContext();
+@@ -391,7 +384,7 @@ void TemplateArgToInt::handleOneType(const Type *Ty)
+   TemplateParameterIdxSet *InvalidIdx = 
+     DeclToParamIdx[dyn_cast<TemplateDecl>(TmplD->getCanonicalDecl())];
+   TransAssert(InvalidIdx && "NULL InvalidIdx!");
+-  InvalidIdx->insert(parmIndex);
++  InvalidIdx->insert(ParmType->getIndex());
+ }
+ 
+ TemplateArgToInt::~TemplateArgToInt()

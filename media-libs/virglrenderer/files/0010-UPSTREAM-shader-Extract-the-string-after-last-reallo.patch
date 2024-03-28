@@ -1,0 +1,58 @@
+From c1583a6ff119bd76ba5972003f413596f9af3794 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Fri, 28 Apr 2023 11:11:39 +0200
+Subject: [PATCH 10/17] UPSTREAM: shader: Extract the string after last
+ reallocation
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Ensure that the last call to strbuf_appendf in fill_offset_buffer has been called
+before extracting the bias and offset strings.
+
+Change-Id: Ic856ce87203b2ff53f33d3b9e71f127babc5199d
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1099>
+(cherry picked from commit f6afd3c8dd6d351c197459c84f3bf06c7f0b648d)
+---
+ src/vrend_shader.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/src/vrend_shader.c b/src/vrend_shader.c
+index 1d5e3493..29d9d52b 100644
+--- a/src/vrend_shader.c
++++ b/src/vrend_shader.c
+@@ -3289,9 +3289,7 @@ static void translate_tex(struct dump_ctx *ctx,
+ 
+    tex_ext = get_tex_inst_ext(inst);
+ 
+-   const char *bias = bias_buf.buf;
+-   const char *offset = offset_buf.buf;
+-
++   bool exchange_bias_offset = false;
+    if (inst->Texture.NumOffsets == 1) {
+       if (inst->TexOffsets[0].Index >= (int)ARRAY_SIZE(ctx->imm)) {
+          vrend_printf( "Immediate exceeded, max is %lu\n", ARRAY_SIZE(ctx->imm));
+@@ -3304,12 +3302,15 @@ static void translate_tex(struct dump_ctx *ctx,
+          goto cleanup;
+       }
+ 
+-      if (inst->Instruction.Opcode == TGSI_OPCODE_TXL || inst->Instruction.Opcode == TGSI_OPCODE_TXL2 || inst->Instruction.Opcode == TGSI_OPCODE_TXD || (inst->Instruction.Opcode == TGSI_OPCODE_TG4 && is_shad)) {
+-         offset = bias_buf.buf;
+-         bias = offset_buf.buf;
+-      }
++      exchange_bias_offset = inst->Instruction.Opcode == TGSI_OPCODE_TXL ||
++         inst->Instruction.Opcode == TGSI_OPCODE_TXL2 ||
++         inst->Instruction.Opcode == TGSI_OPCODE_TXD ||
++         (inst->Instruction.Opcode == TGSI_OPCODE_TG4 && is_shad);
++
+    }
+ 
++   const char *bias = exchange_bias_offset ? offset_buf.buf : bias_buf.buf;
++   const char *offset = exchange_bias_offset ? bias_buf.buf : offset_buf.buf;
+    // EXT_texture_shadow_lod defines a few more functions handling bias
+    if (bias &&
+        (inst->Texture.Texture == TGSI_TEXTURE_SHADOW2D_ARRAY ||
+-- 
+2.39.2
+

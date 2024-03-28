@@ -1,0 +1,54 @@
+From 2d11c2685724d33f54d878bd8a05d83406dca82d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Wed, 3 May 2023 19:26:48 +0200
+Subject: [PATCH 15/17] UPSTREAM: renderer: Take a reference of the resource
+ when assigning it to the uniform buffer
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Avoid using the resource when a dispose operation happened before the sub context
+has been freed.
+
+Change-Id: I0ea8fec39046442f6b3fbb5d77774217ae6e5191
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1108>
+(cherry picked from commit c392c23d2e7469b95cc5f1da41478b08506857e9)
+---
+ src/vrend_renderer.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/src/vrend_renderer.c b/src/vrend_renderer.c
+index 4692c5f7..98da934c 100644
+--- a/src/vrend_renderer.c
++++ b/src/vrend_renderer.c
+@@ -3419,12 +3419,13 @@ void vrend_set_uniform_buffer(struct vrend_context *ctx,
+          vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_RESOURCE, res_handle);
+          return;
+       }
+-      cbs->buffer = (struct pipe_resource *)res;
++
++      vrend_resource_reference((struct vrend_resource **)&cbs->buffer, res);
+       cbs->buffer_offset = offset;
+       cbs->buffer_size = length;
+       ctx->sub->const_bufs_used_mask[shader] |= mask;
+    } else {
+-      cbs->buffer = NULL;
++      vrend_resource_reference((struct vrend_resource **)&cbs->buffer, NULL);
+       cbs->buffer_offset = 0;
+       cbs->buffer_size = 0;
+       ctx->sub->const_bufs_used_mask[shader] &= ~mask;
+@@ -7475,6 +7476,10 @@ static void vrend_destroy_sub_context(struct vrend_sub_context *sub)
+    for (enum pipe_shader_type type = 0; type < PIPE_SHADER_TYPES; type++) {
+       free(sub->consts[type].consts);
+       sub->consts[type].consts = NULL;
++      while (sub->const_bufs_used_mask[type]) {
++         uint32_t i = u_bit_scan(&sub->const_bufs_used_mask[type]);
++         vrend_resource_reference((struct vrend_resource **)&sub->cbs[type][i].buffer, NULL);
++      }
+ 
+       for (unsigned i = 0; i < PIPE_MAX_SHADER_SAMPLER_VIEWS; i++) {
+          vrend_sampler_view_reference(&sub->views[type].views[i], NULL);
+-- 
+2.39.2
+

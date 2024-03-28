@@ -1,0 +1,67 @@
+From f69be7f08f0d254912aa3a7781cbc52ed648f475 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Fri, 28 Apr 2023 11:07:43 +0200
+Subject: [PATCH 09/17] UPSTREAM: shader: Check the bias and offset after the
+ last addition
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The bias and offset were checked too early leading to missing EXT_texture_shadow_lod
+in some cases like with sampler2DArrayShadow.
+
+Change-Id: Ic434b562fd5d2c08c918debbebc5a3a581fb74e6
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1099>
+(cherry picked from commit 15c29f99e01bdb6eaef541fb30c450fd1f762a21)
+---
+ src/vrend_shader.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/src/vrend_shader.c b/src/vrend_shader.c
+index 0939569a..1d5e3493 100644
+--- a/src/vrend_shader.c
++++ b/src/vrend_shader.c
+@@ -3292,19 +3292,6 @@ static void translate_tex(struct dump_ctx *ctx,
+    const char *bias = bias_buf.buf;
+    const char *offset = offset_buf.buf;
+ 
+-   // EXT_texture_shadow_lod defines a few more functions handling bias
+-   if (bias &&
+-       (inst->Texture.Texture == TGSI_TEXTURE_SHADOW2D_ARRAY ||
+-        inst->Texture.Texture == TGSI_TEXTURE_SHADOWCUBE ||
+-        inst->Texture.Texture == TGSI_TEXTURE_SHADOWCUBE_ARRAY))
+-      ctx->shader_req_bits |= SHADER_REQ_TEXTURE_SHADOW_LOD;
+-
+-   // EXT_texture_shadow_lod also adds the missing textureOffset for 2DArrayShadow in GLES
+-   if ((bias || offset) && ctx->cfg->use_gles &&
+-       (inst->Texture.Texture == TGSI_TEXTURE_SHADOW1D_ARRAY ||
+-        inst->Texture.Texture == TGSI_TEXTURE_SHADOW2D_ARRAY))
+-      ctx->shader_req_bits |= SHADER_REQ_TEXTURE_SHADOW_LOD;
+-
+    if (inst->Texture.NumOffsets == 1) {
+       if (inst->TexOffsets[0].Index >= (int)ARRAY_SIZE(ctx->imm)) {
+          vrend_printf( "Immediate exceeded, max is %lu\n", ARRAY_SIZE(ctx->imm));
+@@ -3323,6 +3310,19 @@ static void translate_tex(struct dump_ctx *ctx,
+       }
+    }
+ 
++   // EXT_texture_shadow_lod defines a few more functions handling bias
++   if (bias &&
++       (inst->Texture.Texture == TGSI_TEXTURE_SHADOW2D_ARRAY ||
++        inst->Texture.Texture == TGSI_TEXTURE_SHADOWCUBE ||
++        inst->Texture.Texture == TGSI_TEXTURE_SHADOWCUBE_ARRAY))
++      ctx->shader_req_bits |= SHADER_REQ_TEXTURE_SHADOW_LOD;
++
++   // EXT_texture_shadow_lod also adds the missing textureOffset for 2DArrayShadow in GLES
++   if ((bias || offset) && ctx->cfg->use_gles &&
++       (inst->Texture.Texture == TGSI_TEXTURE_SHADOW1D_ARRAY ||
++        inst->Texture.Texture == TGSI_TEXTURE_SHADOW2D_ARRAY))
++      ctx->shader_req_bits |= SHADER_REQ_TEXTURE_SHADOW_LOD;
++
+    char buf[255];
+    const char *new_srcs[4] = { buf, srcs[1], srcs[2], srcs[3] };
+ 
+-- 
+2.39.2
+

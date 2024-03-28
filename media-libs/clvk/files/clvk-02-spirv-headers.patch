@@ -1,0 +1,25 @@
+diff --git a/clvk/src/log.cpp b/clvk/src/log.cpp
+index 8157ebb..9227c6b 100644
+--- a/clvk/src/log.cpp
++++ b/clvk/src/log.cpp
+@@ -521,9 +521,6 @@ const char* spirv_capability_to_string(spv::Capability capability) {
+         CASE(spv::CapabilityRayQueryKHR);
+         CASE(spv::CapabilityRayTraversalPrimitiveCullingKHR);
+         CASE(spv::CapabilityRayTracingKHR);
+-        CASE(spv::CapabilityTextureSampleWeightedQCOM);
+-        CASE(spv::CapabilityTextureBoxFilterQCOM);
+-        CASE(spv::CapabilityTextureBlockMatchQCOM);
+         CASE(spv::CapabilityFloat16ImageAMD);
+         CASE(spv::CapabilityImageGatherBiasLodAMD);
+         CASE(spv::CapabilityFragmentMaskAMD);
+@@ -628,10 +625,7 @@ const char* spirv_capability_to_string(spv::Capability capability) {
+         CASE(spv::CapabilityOptNoneINTEL);
+         CASE(spv::CapabilityAtomicFloat16AddEXT);
+         CASE(spv::CapabilityDebugInfoModuleINTEL);
+-        CASE(spv::CapabilityBFloat16ConversionINTEL);
+         CASE(spv::CapabilitySplitBarrierINTEL);
+-        CASE(spv::CapabilityFPGAKernelAttributesv2INTEL);
+-        CASE(spv::CapabilityFPGALatencyControlINTEL);
+         CASE(spv::CapabilityFPGAArgumentInterfacesINTEL);
+         CASE(spv::CapabilityGroupUniformArithmeticKHR);
+         CASE(spv::CapabilityMax);

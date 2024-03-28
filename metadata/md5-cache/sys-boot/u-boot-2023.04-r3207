@@ -1,0 +1,14 @@
+BDEPEND=dev-vcs/git chromeos-base/chromeos-config-host:=
+DEFINED_PHASES=compile configure info install setup unpack
+DEPEND=sandbox? ( media-libs/libsdl:= ) has_chromeos_config_bsp? ( chromeos-base/chromeos-config-bsp:= ) has_chromeos_config_bsp_private? ( chromeos-base/chromeos-config-bsp-private:= ) has_chromeos_config_bsp_baseboard? ( chromeos-base/chromeos-config-bsp-baseboard:= ) has_chromeos_config_bsp_baseboard_private? ( chromeos-base/chromeos-config-bsp-baseboard-private:= ) unibuild? ( chromeos-base/chromeos-config:= )
+DESCRIPTION=Das U-Boot boot loader
+EAPI=7
+HOMEPAGE=http://www.denx.de/wiki/U-Boot
+IUSE=dev sandbox vboot werror cros_host cros_workon_tree_743634123d5aed8f40b870899f53ade2cf07fa2a_73c6e0d28201a6130815c93e1ed71651f6eb4d99 has_chromeos_config_bsp has_chromeos_config_bsp_private has_chromeos_config_bsp_baseboard has_chromeos_config_bsp_baseboard_private unibuild asan coverage fuzzer msan tsan ubsan
+KEYWORDS=*
+LICENSE=GPL-2
+PROPERTIES=live
+RDEPEND=sandbox? ( media-libs/libsdl:= ) chromeos-base/u-boot-scripts !!sys-boot/chromeos-u-boot has_chromeos_config_bsp? ( chromeos-base/chromeos-config-bsp:= ) has_chromeos_config_bsp_private? ( chromeos-base/chromeos-config-bsp-private:= ) has_chromeos_config_bsp_baseboard? ( chromeos-base/chromeos-config-bsp-baseboard:= ) has_chromeos_config_bsp_baseboard_private? ( chromeos-base/chromeos-config-bsp-baseboard-private:= ) unibuild? ( chromeos-base/chromeos-config:= )
+SLOT=0/2023.04-r3207
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-sanitizers	02391973ba1e60a0fca5b96f94f4beff	cros-unibuild	b261de439eed1d0fcfbf854064a6ae53	cros-workon	c286b70ed045cd0c9488c299b7c0859d	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	multilib	2477ebe553d3e4d2c606191fe6c33602	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e
+_md5_=9a68102a7a429ef785fe743e043b2181

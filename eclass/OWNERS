@@ -1,0 +1,10 @@
+include chromiumos/overlays/portage-stable:/eclass/OWNERS
+
+per-file cros-firmware.eclass = file:chromiumos/platform/firmware:/OWNERS
+per-file cros-kernel2.eclass = file:chromiumos/owners:v1:/kernel/OWNERS.build
+per-file libchrome-version.eclass = file:chromiumos/platform/libchrome:/OWNERS
+per-file libchrome-version.eclass = chromeos-ci-prod@chromeos-bot.iam.gserviceaccount.com
+
+# For cros-rust.eclass, primarily intended for simple toolchain-related flag
+# flips, etc. For cros-rustc.eclass, the toolchain team owns this very directly.
+per-file cros-rust*.eclass = file:/chromiumos/third_party/toolchain-utils:/OWNERS.toolchain

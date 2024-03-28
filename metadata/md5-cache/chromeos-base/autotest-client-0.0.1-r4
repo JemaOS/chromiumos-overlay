@@ -1,0 +1,11 @@
+DEFINED_PHASES=install
+DEPEND=chromeos-base/autotest
+DESCRIPTION=Client portion of autotest installed at image creation time
+EAPI=7
+HOMEPAGE=http://src.chromium.org
+IUSE=-moblab
+KEYWORDS=*
+LICENSE=GPL-2
+SLOT=0
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee
+_md5_=4483483aea4e7072c6ced4b9c038f8f5

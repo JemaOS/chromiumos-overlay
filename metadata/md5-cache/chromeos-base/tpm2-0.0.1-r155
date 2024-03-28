@@ -1,0 +1,13 @@
+BDEPEND=dev-vcs/git
+DEFINED_PHASES=compile info install setup unpack
+DEPEND=dev-libs/openssl:0=
+DESCRIPTION=TPM2.0 library
+EAPI=7
+HOMEPAGE=https://chromium.googlesource.com/chromiumos/third_party/tpm2/
+IUSE=generic_tpm2 test tpm2_simulator tpm2_simulator_manufacturer cros_host cros_workon_tree_0863f39408a3f136f0c594aa4df8ba5ad34aedec
+KEYWORDS=*
+LICENSE=BSD-Google
+PROPERTIES=live
+SLOT=0/0.0.1-r155
+_eclasses_=cros-constants	8cfa3f3127717bb5ada2312a7260d3ee	cros-credentials	ef8a3235b87d518a12e7677c66ff520e	cros-workon	c286b70ed045cd0c9488c299b7c0859d	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	git-2	d6a1d7d3b4c4fff2fba86e3f53beeb0f	multilib	2477ebe553d3e4d2c606191fe6c33602	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e
+_md5_=2eb68cc7c4565852629bf44b8bfac4a4

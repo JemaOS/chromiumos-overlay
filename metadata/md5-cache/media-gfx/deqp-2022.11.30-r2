@@ -1,0 +1,13 @@
+DEFINED_PHASES=compile configure install prepare test unpack
+DEPEND=virtual/opengles media-libs/minigbm media-libs/libpng vulkan? ( virtual/vulkan-icd ) x11-drivers/opengles-headers x11-libs/libX11 dev-util/ninja >=dev-util/cmake-3.9.6
+DESCRIPTION=drawElements Quality Program - an OpenGL ES testsuite
+EAPI=6
+HOMEPAGE=https://github.com/KhronosGroup/VK-GL-CTS
+IUSE=-vulkan asan coverage fuzzer msan tsan ubsan
+KEYWORDS=*
+LICENSE=Apache-2.0
+RDEPEND=virtual/opengles media-libs/minigbm media-libs/libpng vulkan? ( virtual/vulkan-icd )
+SLOT=0
+SRC_URI=https://github.com/KhronosGroup/VK-GL-CTS/archive/6024a88390942876147a88dce82bbed73b866c1b.tar.gz -> deqp-6024a88390942876147a88dce82bbed73b866c1b.tar.gz https://github.com/KhronosGroup/glslang/archive/7dda6a6347b0bd550e202942adee475956ef462a.tar.gz -> glslang-7dda6a6347b0bd550e202942adee475956ef462a.tar.gz https://github.com/KhronosGroup/SPIRV-Tools/archive/b930e734ea198b7aabbbf04ee1562cf6f57962f0.tar.gz -> SPIRV-Tools-b930e734ea198b7aabbbf04ee1562cf6f57962f0.tar.gz https://github.com/KhronosGroup/SPIRV-Headers/archive/b765c355f488837ca4c77980ba69484f3ff277f5.tar.gz -> SPIRV-Headers-b765c355f488837ca4c77980ba69484f3ff277f5.tar.gz https://github.com/google/amber/archive/8b145a6c89dcdb4ec28173339dd176fb7b6f43ed.tar.gz -> amber-8b145a6c89dcdb4ec28173339dd176fb7b6f43ed.tar.gz https://github.com/open-source-parsers/jsoncpp/archive/9059f5cad030ba11d37818847443a53918c327b1.tar.gz -> jsoncpp-9059f5cad030ba11d37818847443a53918c327b1.tar.gz
+_eclasses_=cmake-utils	91d6ef31dc426240577497cacbf2508c	cros-sanitizers	02391973ba1e60a0fca5b96f94f4beff	desktop	b1d22ac8bdd4679ab79c71aca235009d	epatch	ed88001f77c6dd0d5f09e45c1a5b480e	estack	686eaab303305a908fd57b2fd7617800	eutils	fcb2aa98e1948b835b5ae66ca52868c5	flag-o-matic	b3ead43a6957a00bec2e415bd5c52d27	ltprune	2729691420b6deeda2a90b1f1183fb55	multilib	2477ebe553d3e4d2c606191fe6c33602	multiprocessing	c3cf317581e5bd068a4b851f03dd8cba	ninja-utils	132cbb376048d079b5a012f5467c4e7f	preserve-libs	ef207dc62baddfddfd39a164d9797648	toolchain-funcs	528ab0a9e1ee02c57524ad3bede3c57e	vcs-clean	2a0f74a496fa2b1552c4f3398258b7bf	xdg-utils	ff2ff954e6b17929574eee4efc5152ba
+_md5_=e4b9f806e1b6b97883e9681fc7fc9973

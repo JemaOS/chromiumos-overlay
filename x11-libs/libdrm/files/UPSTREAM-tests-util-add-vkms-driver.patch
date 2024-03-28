@@ -1,0 +1,30 @@
+From c6d6dce99fb3e7e681fbba9e198345fdbd10e49e Mon Sep 17 00:00:00 2001
+From: Yi Xie <yixie@google.com>
+Date: Thu, 2 Feb 2023 12:58:12 +0900
+Subject: [PATCH] UPSTREAM: tests/util: Add vkms driver
+
+Add an entry for the "vkms" driver, so that the test utilities work with
+the vkms driver without passing the -M argument.
+
+Ported from https://cgit.freedesktop.org/mesa/drm/commit/?id=c6d6dce99fb3e7e681fbba9e198345fdbd10e49e
+
+Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+Signed-off-by: Yi Xie <yixie@google.com>
+---
+ tests/util/kms.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tests/util/kms.c b/tests/util/kms.c
+index 95b7a455..34a84180 100644
+--- a/tests/util/kms.c
++++ b/tests/util/kms.c
+@@ -150,6 +150,7 @@ static const char * const modules[] = {
+ 	"komeda",
+ 	"imx-dcss",
+ 	"mxsfb-drm",
++	"vkms",
+ };
+ 
+ int util_open(const char *device, const char *module)
+-- 
+cgit v1.2.1

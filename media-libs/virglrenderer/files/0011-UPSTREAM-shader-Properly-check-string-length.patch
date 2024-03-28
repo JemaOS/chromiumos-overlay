@@ -1,0 +1,74 @@
+From 906afc605d89fe283e6724eec4c45777bf3ad3ac Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Corentin=20No=C3=ABl?= <corentin.noel@collabora.com>
+Date: Fri, 28 Apr 2023 11:14:22 +0200
+Subject: [PATCH 11/17] UPSTREAM: shader: Properly check string length
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The string are always pre-allocated so make sure to check the actual used length
+instead of string nullability.
+
+Change-Id: I9ef833334c6885a4f447f4d197685464d7f9989d
+Signed-off-by: Corentin Noël <corentin.noel@collabora.com>
+Part-of: <https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1099>
+(cherry picked from commit 0856ef1ee4e596a8b5e86c06ed5c71e390c3b3ea)
+---
+ src/vrend_shader.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/src/vrend_shader.c b/src/vrend_shader.c
+index 29d9d52b..ec9bcc74 100644
+--- a/src/vrend_shader.c
++++ b/src/vrend_shader.c
+@@ -3095,7 +3095,6 @@ static void translate_tex(struct dump_ctx *ctx,
+    bool is_shad;
+ 
+    int sampler_index = 1;
+-   const char *tex_ext;
+ 
+    struct vrend_strbuf bias_buf;
+    struct vrend_strbuf offset_buf;
+@@ -3287,8 +3286,6 @@ static void translate_tex(struct dump_ctx *ctx,
+       ;
+    }
+ 
+-   tex_ext = get_tex_inst_ext(inst);
+-
+    bool exchange_bias_offset = false;
+    if (inst->Texture.NumOffsets == 1) {
+       if (inst->TexOffsets[0].Index >= (int)ARRAY_SIZE(ctx->imm)) {
+@@ -3309,23 +3306,26 @@ static void translate_tex(struct dump_ctx *ctx,
+ 
+    }
+ 
+-   const char *bias = exchange_bias_offset ? offset_buf.buf : bias_buf.buf;
+-   const char *offset = exchange_bias_offset ? bias_buf.buf : offset_buf.buf;
++   bool has_bias = strbuf_get_len (&bias_buf) != 0;
++   bool has_offset = strbuf_get_len (&offset_buf) != 0;
+    // EXT_texture_shadow_lod defines a few more functions handling bias
+-   if (bias &&
++   if (has_bias &&
+        (inst->Texture.Texture == TGSI_TEXTURE_SHADOW2D_ARRAY ||
+         inst->Texture.Texture == TGSI_TEXTURE_SHADOWCUBE ||
+         inst->Texture.Texture == TGSI_TEXTURE_SHADOWCUBE_ARRAY))
+       ctx->shader_req_bits |= SHADER_REQ_TEXTURE_SHADOW_LOD;
+ 
+    // EXT_texture_shadow_lod also adds the missing textureOffset for 2DArrayShadow in GLES
+-   if ((bias || offset) && ctx->cfg->use_gles &&
++   if ((has_bias || has_offset) && ctx->cfg->use_gles &&
+        (inst->Texture.Texture == TGSI_TEXTURE_SHADOW1D_ARRAY ||
+         inst->Texture.Texture == TGSI_TEXTURE_SHADOW2D_ARRAY))
+       ctx->shader_req_bits |= SHADER_REQ_TEXTURE_SHADOW_LOD;
+ 
+    char buf[255];
+    const char *new_srcs[4] = { buf, srcs[1], srcs[2], srcs[3] };
++   const char *tex_ext = get_tex_inst_ext(inst);
++   const char *bias = exchange_bias_offset ? offset_buf.buf : bias_buf.buf;
++   const char *offset = exchange_bias_offset ? bias_buf.buf : offset_buf.buf;
+ 
+    /* We have to unnormalize the coordinate for all but the texel fetch instruction */
+    if (inst->Instruction.Opcode != TGSI_OPCODE_TXF &&
+-- 
+2.39.2
+
